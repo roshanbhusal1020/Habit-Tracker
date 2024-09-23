@@ -5,13 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\Journal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class JournalController extends Controller
 {
     //
-    public function index() 
+    public function show() 
     {
-        
+        $journal = Journal::all();
+        return view('pages.journal.viewJournal', compact('journal'));
     }
 
     public function create()
@@ -44,6 +46,10 @@ class JournalController extends Controller
             dump($test);
             return redirect()->route('journal.create')->with('success', 'Journal entry created successfully.');
 
+    }
+    public function edit ($id)
+    {
+        dump($id);
     }
 }
 
