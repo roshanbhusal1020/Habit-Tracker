@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 
 
-class Habitstable extends Controller
+class HabitsTableController extends Controller
 {
     public function show () {
         $currentMonth = Carbon::now()->format('m');

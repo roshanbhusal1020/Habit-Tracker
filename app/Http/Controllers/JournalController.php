@@ -29,11 +29,27 @@ class JournalController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required',
         ]);
-        Journal::create([
-            'user_id' => auth()->id(),
-            'title' => $test['title'],
-            'content' => $test['content'],
-        ]);
+
+        $existingJournal = Journal::where('user_id', auth()->id())
+                            ->whereDate('created_at', now()->toDateString())
+                            ->first();
+        dump($existingJournal);
+
+        if ($existingJournal) {
+            $existingJournal-> update([
+    
+                'content' => $existingJournal->content . "\n" . $request->input('content')
+            ]);
+        } else {
+
+            Journal::create([
+                'user_id' => auth()->id(),
+                'title' => $test['title'],
+                'content' => $test['content'],
+            ]);
+        }
+
+
         
     
         // Assuming you have a Journal model
@@ -50,6 +66,25 @@ class JournalController extends Controller
     public function edit ($id)
     {
         dump($id);
+        $journal = Journal::findOrFail($id);
+        return view('pages.journal.editJournal', compact('journal'));
+    }
+
+    public function update (Request $request, $id) 
+    {
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required'
+        ]);
+
+        $journal = Journal::findOrFail($id);
+        $journal-> update([
+            'title' => $request->input('title'), 
+            'content' => $request->input('content')
+        ]);
+        return redirect()->route('journal.show', ['journal' => $journal->id])->with('success', 'Journal entry created successfully.');
+
     }
 }
 

@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('journal', function (Blueprint $table) {
-            $table->id();   
+        Schema::create('_list_of_monthly_habits', function (Blueprint $table) {
+            $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('title');
-            $table->text('content');
+            $table->string('HabitName'); 
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('journal');
+        Schema::dropIfExists('_list_of_monthly_habits');
     }
 };
