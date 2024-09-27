@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('monthly_habits_logs', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->integer('Habit_id'); 
+            $table->integer('Habit_id'); // change it to habit_id
             $table->boolean('done')->default(false); 
             $table->timestamps();
         });
