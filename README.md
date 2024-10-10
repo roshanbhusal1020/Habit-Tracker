@@ -23,4 +23,5 @@ I need to follow the problem statement. WRITE THE PROBLEM STATEMENT HERE AND WHA
 
 **Not necessary but I could also add:**
 1) PHP CS FIXER
-2) DOCKER 
+2) DOCKER
+3) I could check when I feel certain emotion. for eg: I feel depressed everytime I work from home and I have got days offs. While netural emotion everytime I go to the office. When I right click on certain emotion option in the table, it should give an option to track when I feel this emotion. 
