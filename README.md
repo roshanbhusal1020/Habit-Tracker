@@ -19,6 +19,7 @@ I need to follow the problem statement. WRITE THE PROBLEM STATEMENT HERE AND WHA
 7) A chart of showing amount of todolist/Habit logs completed or not;  -> quickchart(This ones perhaps unnecessarily difficult, is it even worth it) ??. I could just do a simple table graph instead if its too difficult.
 8) Create a home page which is accesible to everone where they have option to view the DEMO, like how professionally the legit bussiness do. 
 9) what are the things that are holding me back like insecurities, circumstances. What could be done about it. If possible add this feature somewhere in habit table or somewhere where it is engaged more.
+10) Challenges. My challenges and Discover challenges.
 
 **Not necessary but I could also add:**
 1) PHP CS FIXER
