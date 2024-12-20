@@ -8,7 +8,8 @@ use Carbon\Carbon;
 
 class HabitsTableController extends Controller
 {
-    public function show () {
+    public function show () 
+    {
         $currentMonth = Carbon::now()->format('m');
         $currentYear = Carbon::now()->format('y');   
         $daysInMonth = Carbon::now()->daysInMonth; 
@@ -16,4 +17,12 @@ class HabitsTableController extends Controller
     
         return view('table', compact('currentMonth', 'currentYear', 'daysInMonth'));
     }
+
+    public function edit ($id) 
+    {
+    
+    }
+
+
+
 }

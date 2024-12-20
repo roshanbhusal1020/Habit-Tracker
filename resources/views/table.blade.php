@@ -5,6 +5,7 @@
 
 <h1>helllllllllllll </h1>
 
+<button>Add a habit</button>
 
 <table>
     <ul>

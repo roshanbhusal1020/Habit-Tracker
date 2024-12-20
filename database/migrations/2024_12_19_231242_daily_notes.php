@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('_list_of_monthly_habits', function (Blueprint $table) {
+        Schema::create('daily_notes', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('HabitName'); 
+            $table->foreignId('user_id')->constrained();
+            $table->date('entry_date');
+            $table->text('description');
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('_list_of_monthly_habits');
+        Schema::dropIfExists('habit_entries');
     }
 };

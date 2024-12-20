@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('bucket_list', function (Blueprint $table) {
+        Schema::create('habit_entries', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('item');
-            $table->boolean('completed')->default(false);
+            $table->foreignId('user_id')->constrained();
+            $table->foreignId('habit_id')->constrained();
+            $table->date('entry_date');
+            $table->string('value');    // the habit values like 'X', 'meh' or '9-17'   
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('bucket_list');
+        Schema::dropIfExists('habit_entries');
     }
 };
