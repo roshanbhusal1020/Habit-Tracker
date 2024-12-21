@@ -42,10 +42,10 @@
                         
                             <tbody class="bg-white divide-y divide-gray-200">
     <!-- Let's just show 5 days manually first -->
-    @for ($day = 1; $day <= 5; $day++)
+    @foreach ($dates as $date)
         <tr>
             <td class="px-6 py-4 whitespace-nowrap">
-                Day {{ $day }}
+                {{ $date['full_date'] }}
             </td>
             <!-- <td class="px-6 py-4 whitespace-nowrap">
                 <input type="text" 
@@ -56,28 +56,28 @@
                 @if (($habit->name != 'Mood') && ($habit->name != 'Productivity'))
                 <td class="px-6 py-4 whitespace-nowrap">
                     <input type="checkbox" 
-                        onchange="saveEntry(this, {{$habit->id}}, {{$day}})"
+                        onchange="saveEntry({{$habit->name}}, this, {{$habit->id}}, '{{$date['full_date']}}')"
                         data-habit= "{{$habit->id}}"
-                        data-day="{{$day}}"
+                        data-day="{{$date['full_date']}}"
                         class="form-checkbox h-5 w-5 text-blue-600">
                 </td>      
                 @endif
               
             @endforeach
             <td class="px-6 py-4 whitespace-nowrap">
-                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood(this, {{$habit->id}} {{$day}})">
+                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('mood',this.value, {{$habit->id}},  '{{$date['full_date']}}')">
                     <option value="">Select</option>
-                    <option value="happy">😊 Happy</option>
+                    <option value="positive">😊 Positive</option>
                     <option value="neutral">😐 Neutral</option>
-                    <option value="sad">😢 Sad</option>
+                    <option value="negative">😢 Negative</option>
                 </select>
             </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood(this, {{$habit->id}} {{$day}})">
+                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('productivity', this.value, {{$habit->id}},  '{{$date['full_date']}}')">
                     <option value="">Select</option>
-                    <option value="happy">😊 Happy</option>
-                    <option value="neutral">😐 Neutral</option>
-                    <option value="sad">😢 Sad</option>
+                    <option value="productive">✅ Productive</option>
+                    <option value="moderate">⚡ Moderately Productive</option>
+                    <option value="unproductive">💤 Unproductive</option>
                 </select>
             </td>
             <td class="px-6 py-4">
@@ -86,7 +86,7 @@
                     placeholder="Add note...">
             </td>
         </tr>
-    @endfor
+    @endforeach
 </tbody>
 
 
@@ -166,6 +166,13 @@
         .catch(error => {
             console.error('Error:', error)
         })
+    }
+
+    function saveMood(name, value, habitId, date) {
+            console.log(date);
+            // console.log('name: '+ name + " value: " + value + ' habitId: ' + habitId + ' day: ' + day);
+
+         
     }
 </script>
 </x-app-layout>

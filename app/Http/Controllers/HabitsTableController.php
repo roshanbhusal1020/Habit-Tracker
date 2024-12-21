@@ -17,13 +17,26 @@ class HabitsTableController extends Controller
         // Generate all dates for the current month
         $currentDate = now()->startOfMonth();
         $endOfMonth = now()->endOfMonth();
+
+        $startOfMonth = \Carbon\Carbon::now()->startOfMonth();
+        $daysInMonth = \Carbon\Carbon::now()->daysInMonth;
+        // dump($daysInMonth);
         $dates = collect();
         
-        while ($currentDate <= $endOfMonth) {
-            $dates->push($currentDate->copy());
-            $currentDate->addDay();
+
+        for($day = 0; $day<$daysInMonth; $day++){
+            $date = $startOfMonth->copy()->addDays($day); 
+            
+            $dates->push([
+                'day'=> $day,
+                'formatted'=>$date->format('D j'),
+                'full_date'=>$date->format('Y-m-d')
+            ]); 
+            // dd($dates);
         }
         
+        
+
         $entries = HabitEntry::where('user_id', auth()->id())
                     ->whereMonth('entry_date', now()->month)
                     ->whereYear('entry_date', now()->year)
