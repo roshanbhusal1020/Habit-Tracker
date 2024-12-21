@@ -45,7 +45,7 @@
     @foreach ($dates as $date)
         <tr>
             <td class="px-6 py-4 whitespace-nowrap">
-                {{ $date['full_date'] }}
+                {{ $date['formatted'] }}
             </td>
             <!-- <td class="px-6 py-4 whitespace-nowrap">
                 <input type="text" 
