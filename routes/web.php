@@ -31,8 +31,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::resource('/journal', JournalController::class);
-    Route::resource('/habits', HabitsTableController::class);
+    Route::get('/habits', [HabitsTableController::class, 'show'])->name('habits.show');
+    Route::post('/habits/entry', [HabitsTableController::class, 'store'])->name('habits.store');
+
+    
 });
 
 require __DIR__.'/auth.php';
