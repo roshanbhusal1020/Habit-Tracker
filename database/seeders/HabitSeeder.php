@@ -1,18 +1,49 @@
+<?php
 
+namespace Database\Seeders;
 
-public function run()
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use App\Models\Habit;
+use App\Models\User;
+
+class HabitSeeder extends Seeder
 {
-    $habits = [
-        ['name' => 'Working Hours', 'type' => 'time_range'],
-        ['name' => 'Exercise', 'type' => 'boolean'],
-        ['name' => 'Reading', 'type' => 'boolean'],
-        ['name' => 'Mood', 'type' => 'mood'],
-    ];
+    /**
+     * Run the database seeds.
+     *
+     * @return void
+     */
+ 
 
-    foreach ($habits as $habit) {
-        Habit::create($habit);
+        public function run()
+        {
+            $habits = [
+
+                ['name' => 'Productivity', 'type' => 'productivity'],
+                ['name' => 'Mood', 'type' => 'mood'],
+            ];
+
+            $users = User::all(); 
+
+
+            foreach($users as $user) {
+                foreach($habits as $habit) {
+
+                    $exists = Habit::where('user_id', $user->id)
+                                    ->where('name', $habit['name'])
+                                    ->exists();
+                    if(!$exists) {
+                        Habit::create(['user_id'=> $user->id, 'name'=>$habit['name'], 'type'=>$habit['type']]);
+
+                    }
+                }
+            }
+
+         
+        }
+
+
     }
-}
 
-
-I should add here all the ideas for now

@@ -1,4 +1,9 @@
 <x-app-layout>
+    <!-- @if(session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif  NEED TO WORK ON THIS AS ITS IMPORTANT TO LET USER KNOW IT WAS SUCCESSFULLY ADDED A HABIT OR ANYTING -->
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Header with Add Button -->
@@ -18,16 +23,15 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Date
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <!-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Working Hours
-                                </th>
+                                </th> -->
                                 @foreach($habits as $habit)
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" >{{ $habit->name }}</th>
+                                   
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" >{{ $habit->name }}</th>
                                     
                                 @endforeach
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Mood
-                                </th>
+                                <!-- I need to add mood and producitivty sepatrtly and remove from the habit like the follwoing code -->
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Notes
                                 </th>
@@ -36,6 +40,54 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             <!-- Day 1 -->
                         
+                            <tbody class="bg-white divide-y divide-gray-200">
+    <!-- Let's just show 5 days manually first -->
+    @for ($day = 1; $day <= 5; $day++)
+        <tr>
+            <td class="px-6 py-4 whitespace-nowrap">
+                Day {{ $day }}
+            </td>
+            <!-- <td class="px-6 py-4 whitespace-nowrap">
+                <input type="text" 
+                    class="form-input rounded-md shadow-sm mt-1 block w-full"
+                    placeholder="9-17">
+            </td> -->
+            @foreach($habits as $habit)
+                @if (($habit->name != 'Mood') && ($habit->name != 'Productivity'))
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <input type="checkbox" 
+                        onchange="saveEntry(this, {{$habit->id}}, {{$day}})"
+                        data-habit= "{{$habit->id}}"
+                        data-day="{{$day}}"
+                        class="form-checkbox h-5 w-5 text-blue-600">
+                </td>      
+                @endif
+              
+            @endforeach
+            <td class="px-6 py-4 whitespace-nowrap">
+                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood(this, {{$habit->id}} {{$day}})">
+                    <option value="">Select</option>
+                    <option value="happy">😊 Happy</option>
+                    <option value="neutral">😐 Neutral</option>
+                    <option value="sad">😢 Sad</option>
+                </select>
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood(this, {{$habit->id}} {{$day}})">
+                    <option value="">Select</option>
+                    <option value="happy">😊 Happy</option>
+                    <option value="neutral">😐 Neutral</option>
+                    <option value="sad">😢 Sad</option>
+                </select>
+            </td>
+            <td class="px-6 py-4">
+                <input type="text"
+                    class="form-input rounded-md shadow-sm mt-1 block w-full"
+                    placeholder="Add note...">
+            </td>
+        </tr>
+    @endfor
+</tbody>
 
 
                         </tbody>
@@ -44,4 +96,76 @@
             </div>
         </div>
     </div>
+    <!-- In your blade file, update the button: -->
+<button onclick="openHabitModal()" class="bg-red-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded">
+    Add New Habit
+</button>
+
+<!-- Add this modal HTML at the bottom of your blade file -->
+<div id="habitModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center">Add New Habit</h3>
+            <form id="newHabitForm" class="mt-4" method="POST" action="{{ route('habits.store') }}">
+                @csrf
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Habit Name</label>
+                    <input type="text" name="name" required 
+                           class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Type</label>
+                    <select name="type" required 
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="checkbox">Checkbox</option>
+                        <option value="text">Text</option>
+                        <option value="mood">Mood</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-between mt-4">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Create Habit
+                    </button>
+                    <button type="button" onclick="closeHabitModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add this JavaScript -->
+<script>
+    function openHabitModal() {
+        document.getElementById('habitModal').classList.remove('hidden');
+    }
+
+    function closeHabitModal() {
+        document.getElementById('habitModal').classList.add('hidden');
+    }
+    function saveEntry(checkbox, habitId, day) {
+
+        console.log('Trying to send', {habitId, day})
+        fetch('/habits/entries/store', {
+            method: 'POST', 
+            headers:  {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({
+            habit_id: habitId, 
+            day:day, 
+            value: checkbox.checked ? 1:0
+        })
+        })
+        .then (response=>response.json())
+        .then(data=> {
+            console.log('Success:', data)
+        })
+        .catch(error => {
+            console.error('Error:', error)
+        })
+    }
+</script>
 </x-app-layout>

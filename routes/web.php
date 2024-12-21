@@ -34,7 +34,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/habits', [HabitsTableController::class, 'show'])->name('habits.show');
     Route::post('/habits/entry', [HabitsTableController::class, 'store'])->name('habits.store');
 
-    
+    // Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
+    Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
+
 });
 
 require __DIR__.'/auth.php';
