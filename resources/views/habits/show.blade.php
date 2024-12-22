@@ -56,7 +56,7 @@
                 @if (($habit->name != 'Mood') && ($habit->name != 'Productivity'))
                 <td class="px-6 py-4 whitespace-nowrap">
                     <input type="checkbox" 
-                        onchange="saveEntry({{$habit->name}}, this, {{$habit->id}}, '{{$date['full_date']}}')"
+                        onchange="saveEntry('{{$habit['name']}}', this, '{{$habit['id']}}', '{{$date['full_date']}}')"
                         data-habit= "{{$habit->id}}"
                         data-day="{{$date['full_date']}}"
                         class="form-checkbox h-5 w-5 text-blue-600">
@@ -65,14 +65,6 @@
               
             @endforeach
             <td class="px-6 py-4 whitespace-nowrap">
-                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('mood',this.value, {{$habit->id}},  '{{$date['full_date']}}')">
-                    <option value="">Select</option>
-                    <option value="positive">😊 Positive</option>
-                    <option value="neutral">😐 Neutral</option>
-                    <option value="negative">😢 Negative</option>
-                </select>
-            </td>
-            <td class="px-6 py-4 whitespace-nowrap">
                 <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('productivity', this.value, {{$habit->id}},  '{{$date['full_date']}}')">
                     <option value="">Select</option>
                     <option value="productive">✅ Productive</option>
@@ -80,6 +72,15 @@
                     <option value="unproductive">💤 Unproductive</option>
                 </select>
             </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('mood',this.value, {{$habit->id}},  '{{$date['full_date']}}')">
+                    <option value="">Select</option>
+                    <option value="positive">😊 Positive</option>
+                    <option value="neutral">😐 Neutral</option>
+                    <option value="negative">😢 Negative</option>
+                </select>
+            </td>
+
             <td class="px-6 py-4">
                 <input type="text"
                     class="form-input rounded-md shadow-sm mt-1 block w-full"
@@ -144,19 +145,21 @@
     function closeHabitModal() {
         document.getElementById('habitModal').classList.add('hidden');
     }
-    function saveEntry(checkbox, habitId, day) {
+    function saveEntry(name, input, habitId, date) {
 
-        console.log('Trying to send', {habitId, day})
+        console.log('Trying to send', {name, input, habitId, date})
         fetch('/habits/entries/store', {
             method: 'POST', 
             headers:  {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
+        credentials: 'same-origin',
         body: JSON.stringify({
+            name: name,
             habit_id: habitId, 
-            day:day, 
-            value: checkbox.checked ? 1:0
+            date:date, 
+            value: input.checked ? 1:0
         })
         })
         .then (response=>response.json())
@@ -169,9 +172,29 @@
     }
 
     function saveMood(name, value, habitId, date) {
-            console.log(date);
-            // console.log('name: '+ name + " value: " + value + ' habitId: ' + habitId + ' day: ' + day);
-
+            // console.log(date);
+            console.log('name: '+ name + " value: " + value + ' habitId: ' + habitId + ' date: ' + date);
+            fetch('/habits/entries/store', {
+            method: 'POST', 
+            headers:  {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            name: name,
+            habit_id: habitId, 
+            date:date, 
+            value: value
+        })
+        })
+        .then (response=>response.json())
+        .then(data=> {
+            console.log('Success:', data)
+        })
+        .catch(error => {
+            console.error('Error:', error)
+        })
          
     }
 </script>

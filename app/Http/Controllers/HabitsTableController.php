@@ -64,7 +64,26 @@ class HabitsTableController extends Controller
 
     public function storeEntry (Request $request) 
     {
-        // dump($request);
+        // logger('Headers:', $request->headers->all());
+
+        if(auth()->check()) {
+            return response()->json(['error' => 'Unauthorised'], 401);
+        }
+
+
+        $habitEntry = HabitEntry::updateOrCreate(
+            [
+                'user_id' =>auth()->id(),
+                'habit_id' => $request->habit_id, 
+                'entry_date' => $request->date
+            ], 
+            [
+                'value' => $request->value, 
+            ]
+            );
+
+
+
         return response()->json([
             'message' => 'Entry successful',
             'debug_data' => $request->all()  // This will be visible in the browser console
