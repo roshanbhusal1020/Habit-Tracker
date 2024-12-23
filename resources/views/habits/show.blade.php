@@ -60,13 +60,15 @@
                         data-habit= "{{$habit->id}}"
                         data-day="{{$date['full_date']}}"
                         class="form-checkbox h-5 w-5 text-blue-600" 
-                    
-                        >
-                            @if (isset($date['full_date']))
-                                @foreach ( as )
-                                    
+                     @if(isset($entries[$date['full_date']]))
+                            @foreach($entries[$date['full_date']] as $entry)
+                           @if ($entry['habit_id'] == $habit->id && $entry['value'] ==1)
+                               checked
+                           @endif
                                 @endforeach                                
                             @endif
+                        >
+                   
                 </td>      
                 @endif
               
@@ -75,7 +77,7 @@
                 <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('productivity', this.value, {{$habit->id}},  '{{$date['full_date']}}')">
                     <option value="">Select</option>
                     <option value="productive">✅ Productive</option>
-                    <option value="moderate">⚡ Moderately Productive</option>
+                    <option value="moderate" selected>⚡ Moderately Productive</option>
                     <option value="unproductive">💤 Unproductive</option>
                 </select>
             </td>

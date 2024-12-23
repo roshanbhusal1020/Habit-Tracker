@@ -48,6 +48,7 @@ class HabitsTableController extends Controller
                     ->get()
                     ->groupBy('entry_date');
         dump($entries);
+        dump($dates);
     
         return view('habits.show', compact('habits', 'entries', 'dates'));
     }
