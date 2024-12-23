@@ -83,12 +83,12 @@
             @endforeach
             <td class="px-6 py-4 whitespace-nowrap">
     <select class="form-select rounded-md shadow-sm mt-1 block w-full" 
-            onchange="saveMood('productivity', this.value, {{$habit->id}}, '{{$date['full_date']}}')">
+            onchange="saveMood('productivity', this.value, {{$productivityHabit->id}}, '{{$date['full_date']}}')">
         <option value="">Select</option>
         <option value="productive" 
             @if(isset($entries[$date['full_date']]))
                 @foreach($entries[$date['full_date']] as $entry)
-                    @if($entry->habit_id == $habit->id && $entry->value == 'productive')
+                    @if($entry->habit_id == $productivityHabit->id && $entry->value == 'productive')
                         selected
                     @endif
                 @endforeach
@@ -97,7 +97,7 @@
         <option value="moderate"
             @if(isset($entries[$date['full_date']]))
                 @foreach($entries[$date['full_date']] as $entry)
-                    @if($entry->habit_id == $habit->id && $entry->value == 'moderate')
+                    @if($entry->habit_id == $productivityHabit->id && $entry->value == 'moderate')
                         selected
                     @endif
                 @endforeach
@@ -106,7 +106,7 @@
         <option value="unproductive"
             @if(isset($entries[$date['full_date']]))
                 @foreach($entries[$date['full_date']] as $entry)
-                    @if($entry->habit_id == $habit->id && $entry->value == 'unproductive')
+                    @if($entry->habit_id == $productivityHabit->id && $entry->value == 'unproductive')
                         selected
                     @endif
                 @endforeach
@@ -115,11 +115,35 @@
     </select>
 </td>
             <td class="px-6 py-4 whitespace-nowrap">
-                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('mood',this.value, {{$habit->id}},  '{{$date['full_date']}}')">
+                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('mood',this.value, {{$moodHabit->id}},  '{{$date['full_date']}}')">
                     <option value="">Select</option>
-                    <option value="positive">😊 Positive</option>
-                    <option value="neutral">😐 Neutral</option>
-                    <option value="negative">😢 Negative</option>
+                    <option value="positive"
+                    @if(isset($entries[$date['full_date']]))
+                @foreach($entries[$date['full_date']] as $entry)
+                    @if($entry->habit_id == $moodHabit->id && $entry->value == 'positive')
+                        selected
+                    @endif
+                @endforeach
+            @endif
+                    >😊 Positive</option>
+                    <option value="neutral"
+                    @if(isset($entries[$date['full_date']]))
+                @foreach($entries[$date['full_date']] as $entry)
+                    @if($entry->habit_id == $moodHabit->id && $entry->value == 'neutral')
+                        selected
+                    @endif
+                @endforeach
+            @endif
+                    >😐 Neutral</option>
+                    <option value="negative"
+                    @if(isset($entries[$date['full_date']]))
+                @foreach($entries[$date['full_date']] as $entry)
+                    @if($entry->habit_id == $moodHabit->id && $entry->value == 'negative')
+                        selected
+                    @endif
+                @endforeach
+            @endif
+                    >😢 Negative</option>
                 </select>
             </td>
 

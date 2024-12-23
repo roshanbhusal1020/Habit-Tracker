@@ -40,7 +40,18 @@ class HabitsTableController extends Controller
             // dd($dates);
         }
         
+        $moodHabit = Habit::where('user_id', auth()->id())
+                        ->where('name', 'Mood')
+                        ->first();
         
+        $productivityHabit = Habit::where('user_id', auth()->id())
+                ->where('name', 'Productivity')
+                ->first();
+
+        $NoteHabit = Habit::where('user_id', auth()->id())
+                ->where('name', 'Note')
+                ->first();
+
 
         $entries = HabitEntry::where('user_id', auth()->id())
                     ->whereMonth('entry_date', now()->month)
@@ -50,8 +61,11 @@ class HabitsTableController extends Controller
         dump($entries);
         dump($dates);
         dump($habits);
+        dump($moodHabit);
+        dump($productivityHabit);
+        
     
-        return view('habits.show', compact('habits', 'entries', 'dates'));
+        return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'NoteHabit'));
     }
 
     public function edit ($id) 
@@ -122,7 +136,7 @@ class HabitsTableController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Entry saved successfully',
-                'entry' => $request
+                'entry' => $habitEntry  
             ]);
         } catch (\Exception $e) {
             
