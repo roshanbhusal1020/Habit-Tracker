@@ -27,10 +27,18 @@
                                     Working Hours
                                 </th> -->
                                 @foreach($habits as $habit)
-                                   
+                                   @if ($habit->name != "Mood" && $habit->name != "Productivity")
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" >{{ $habit->name }}</th>
+                                       
+                                   @endif
                                     
                                 @endforeach
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Productivity
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Mood
+                                </th>
                                 <!-- I need to add mood and producitivty sepatrtly and remove from the habit like the follwoing code -->
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Notes
@@ -74,13 +82,38 @@
               
             @endforeach
             <td class="px-6 py-4 whitespace-nowrap">
-                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('productivity', this.value, {{$habit->id}},  '{{$date['full_date']}}')">
-                    <option value="">Select</option>
-                    <option value="productive">✅ Productive</option>
-                    <option value="moderate" selected>⚡ Moderately Productive</option>
-                    <option value="unproductive">💤 Unproductive</option>
-                </select>
-            </td>
+    <select class="form-select rounded-md shadow-sm mt-1 block w-full" 
+            onchange="saveMood('productivity', this.value, {{$habit->id}}, '{{$date['full_date']}}')">
+        <option value="">Select</option>
+        <option value="productive" 
+            @if(isset($entries[$date['full_date']]))
+                @foreach($entries[$date['full_date']] as $entry)
+                    @if($entry->habit_id == $habit->id && $entry->value == 'productive')
+                        selected
+                    @endif
+                @endforeach
+            @endif
+        >✅ Productive</option>
+        <option value="moderate"
+            @if(isset($entries[$date['full_date']]))
+                @foreach($entries[$date['full_date']] as $entry)
+                    @if($entry->habit_id == $habit->id && $entry->value == 'moderate')
+                        selected
+                    @endif
+                @endforeach
+            @endif
+        >⚡ Moderately Productive</option>
+        <option value="unproductive"
+            @if(isset($entries[$date['full_date']]))
+                @foreach($entries[$date['full_date']] as $entry)
+                    @if($entry->habit_id == $habit->id && $entry->value == 'unproductive')
+                        selected
+                    @endif
+                @endforeach
+            @endif
+        >💤 Unproductive</option>
+    </select>
+</td>
             <td class="px-6 py-4 whitespace-nowrap">
                 <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('mood',this.value, {{$habit->id}},  '{{$date['full_date']}}')">
                     <option value="">Select</option>
