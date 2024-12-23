@@ -48,7 +48,7 @@ class HabitsTableController extends Controller
                 ->where('name', 'Productivity')
                 ->first();
 
-        $NoteHabit = Habit::where('user_id', auth()->id())
+        $noteHabit = Habit::where('user_id', auth()->id())
                 ->where('name', 'Note')
                 ->first();
 
@@ -65,7 +65,7 @@ class HabitsTableController extends Controller
         dump($productivityHabit);
         
     
-        return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'NoteHabit'));
+        return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'noteHabit'));
     }
 
     public function edit ($id) 
