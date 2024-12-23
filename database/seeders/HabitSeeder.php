@@ -23,6 +23,8 @@ class HabitSeeder extends Seeder
 
                 ['name' => 'Productivity', 'type' => 'productivity'],
                 ['name' => 'Mood', 'type' => 'mood'],
+                ['name' => 'Note', 'type' => 'note'],
+
             ];
 
             $users = User::all(); 

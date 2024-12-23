@@ -126,7 +126,18 @@
             <td class="px-6 py-4">
                 <input type="text"
                     class="form-input rounded-md shadow-sm mt-1 block w-full"
-                    placeholder="Add note...">
+                    placeholder="Add note..."
+                    onchange="saveMood('note', this.value, {{$habit->id}}, '{{$date['full_date']}}')"
+                    
+                     @if (isset($entries[$date['full_date']]))
+                        @foreach ($entries[$date['full_date']] as $entry)
+                        @if ($entry->habit_id == $habit->id && $entry->note )
+                        value = "{{$entry['note']}}"
+
+                        @endif
+                        @endforeach
+                     @endif
+                    >
             </td>
         </tr>
     @endforeach

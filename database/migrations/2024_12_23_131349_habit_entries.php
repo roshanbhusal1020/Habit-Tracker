@@ -11,13 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('daily_notes', function (Blueprint $table) {
+        Schema::create('habit_entries', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
+            $table->foreignId('habit_id')->constrained();
             $table->date('entry_date');
-            $table->text('description');
+            $table->string('value');    // the habit values like 'X', 'meh' or '9-17'   
+            $table->text('note')->nullable();  // Add this for daily notes
             $table->timestamps();
-        });
+
+            $table->index('entry_date'); // Optimize date filtering
+            $table->index(['user_id', 'habit_id']); // Optimize user-habit queries
+            $table->unique(['user_id', 'habit_id', 'entry_date']); 
+        });   
     }
 
     /**

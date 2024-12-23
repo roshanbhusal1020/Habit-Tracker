@@ -49,6 +49,7 @@ class HabitsTableController extends Controller
                     ->groupBy('entry_date');
         dump($entries);
         dump($dates);
+        dump($habits);
     
         return view('habits.show', compact('habits', 'entries', 'dates'));
     }
@@ -77,6 +78,7 @@ class HabitsTableController extends Controller
             'date' => 'required|date',
             'value' => 'required'
         ]);
+
     
         // Check authentication
         if(!auth()->check()) {
@@ -84,21 +86,43 @@ class HabitsTableController extends Controller
         }
     
         try {
-            $habitEntry = HabitEntry::updateOrCreate(
-                [
-                    'user_id' => auth()->id(),
-                    'habit_id' => $validated['habit_id'],
-                    'entry_date' => $validated['date']  // Note: changed from 'date' to 'entry_date'
-                ],
-                [
-                    'value' => $validated['value']
-                ]
-            );
+            $existingEntry = HabitEntry::where([
+            'user_id' => auth()->id(), 
+            'habit_id' => $validated['habit_id'], 
+            'entry_date'=> $validated['date']
+            ])->first();
+
+            if($request->name == 'note') {
+                $habitEntry = HabitEntry::updateOrCreate(
+                    [
+                        'user_id' => auth()->id(),
+                        'habit_id' => $validated['habit_id'],
+                        'entry_date' => $validated['date']  // Note: changed from 'date' to 'entry_date'
+                    ],
+                    [
+                        'note' => $validated['value'], // !!Attention!!  This is extremly important, if its value instead of note then other habit dropdowns will be overwritten. I twill cause problem 
+                        'value' => $existingEntry ? $existingEntry->value : "",
+                        ]
+                );
+            } else {
+                $habitEntry = HabitEntry::updateOrCreate(
+                    [
+                        'user_id' => auth()->id(),
+                        'habit_id' => $validated['habit_id'],
+                        'entry_date' => $validated['date']  // Note: changed from 'date' to 'entry_date'
+                    ],
+                    [
+                        'value' => $validated['value'], 
+                        'note' => $existingEntry ? $existingEntry->note : null,
+                    ]
+                );
+            }
+
     
             return response()->json([
                 'success' => true,
                 'message' => 'Entry saved successfully',
-                'entry' => $habitEntry
+                'entry' => $request
             ]);
         } catch (\Exception $e) {
             
