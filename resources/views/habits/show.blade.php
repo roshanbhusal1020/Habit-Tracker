@@ -59,7 +59,14 @@
                         onchange="saveEntry('{{$habit['name']}}', this, '{{$habit['id']}}', '{{$date['full_date']}}')"
                         data-habit= "{{$habit->id}}"
                         data-day="{{$date['full_date']}}"
-                        class="form-checkbox h-5 w-5 text-blue-600">
+                        class="form-checkbox h-5 w-5 text-blue-600" 
+                    
+                        >
+                            @if (isset($date['full_date']))
+                                @foreach ( as )
+                                    
+                                @endforeach                                
+                            @endif
                 </td>      
                 @endif
               

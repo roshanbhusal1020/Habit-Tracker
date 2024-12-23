@@ -6,12 +6,17 @@ use App\Models\Habit;
 use App\Models\HabitEntry;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;  
+
 
 
 class HabitsTableController extends Controller
 {
     public function show()
     {
+
+        dump(auth()->id()); 
+
         $habits = Habit::where('user_id', auth()->id())->get();
         
         // Generate all dates for the current month
@@ -42,6 +47,7 @@ class HabitsTableController extends Controller
                     ->whereYear('entry_date', now()->year)
                     ->get()
                     ->groupBy('entry_date');
+        dump($entries);
     
         return view('habits.show', compact('habits', 'entries', 'dates'));
     }
@@ -62,30 +68,43 @@ class HabitsTableController extends Controller
         return redirect()->route('habits.show');
     }
 
-    public function storeEntry (Request $request) 
+    public function storeEntry(Request $request) 
     {
-        // logger('Headers:', $request->headers->all());
-
-        if(auth()->check()) {
-            return response()->json(['error' => 'Unauthorised'], 401);
+        // First validate the request
+        $validated = $request->validate([
+            'habit_id' => 'required|exists:habits,id',
+            'date' => 'required|date',
+            'value' => 'required'
+        ]);
+    
+        // Check authentication
+        if(!auth()->check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
-
-
-        $habitEntry = HabitEntry::updateOrCreate(
-            [
-                'user_id' =>auth()->id(),
-                'habit_id' => $request->habit_id, 
-                'entry_date' => $request->date
-            ], 
-            [
-                'value' => $request->value, 
-            ]
+    
+        try {
+            $habitEntry = HabitEntry::updateOrCreate(
+                [
+                    'user_id' => auth()->id(),
+                    'habit_id' => $validated['habit_id'],
+                    'entry_date' => $validated['date']  // Note: changed from 'date' to 'entry_date'
+                ],
+                [
+                    'value' => $validated['value']
+                ]
             );
-
-
-
-        return response()->json([
-            'message' => 'Entry successful',
-            'debug_data' => $request->all()  // This will be visible in the browser console
-        ]);    }
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Entry saved successfully',
+                'entry' => $habitEntry
+            ]);
+        } catch (\Exception $e) {
+            
+            return response()->json([
+                'error' => 'Failed to save entry',
+                'details' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

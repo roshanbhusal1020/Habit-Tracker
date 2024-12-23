@@ -9,7 +9,7 @@ class HabitEntry extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['habit_id', 'entry_date', 'value']; 
+    protected $fillable = ['user_id','habit_id', 'entry_date', 'value']; 
 
 
     public function habit() {
