@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Habitstable;
+use App\Http\Controllers\HabitsTableController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -30,7 +31,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::resource('/journal', JournalController::class);
+    Route::get('/habits', [HabitsTableController::class, 'show'])->name('habits.show');
+    Route::post('/habits/entry', [HabitsTableController::class, 'store'])->name('habits.store');
+
+    // Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
+    Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
+
 });
 
 require __DIR__.'/auth.php';
