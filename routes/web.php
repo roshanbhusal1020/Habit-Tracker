@@ -5,7 +5,7 @@ use App\Http\Controllers\HabitsTableController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\PomodoroController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -36,7 +36,7 @@ Route::middleware('auth')->group(function () {
 
     // Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
     Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
-
+    Route::get('/pomodoro', [PomodoroController::class, 'show'])->name('pomodoro.show');
 });
 
 require __DIR__.'/auth.php';
