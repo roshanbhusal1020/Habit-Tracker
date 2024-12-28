@@ -1,96 +1,133 @@
-<h1>HELLO THIS IS POMODORO</h1>
-
 <x-app-layout>
-<div>
-    <div class="flex justify-between align-center ">
-        <h1>Pomodoro</h1>
-        <h1>Short Break</h1>
-        <h1>Long Break</h1>
+    <div class="container mx-auto p-8 max-w-2xl text-center">
+
+
+    <div class="mb-4">
+        <h2 id="modeDisplay" class="text-2x1 font-bold">Focis time</h2>
+        <p>Pomodoros: <span id="pomodoroCount">0</span></p>
     </div>
-    <div class="flex justify-between align-center ">
-        <h1 id="timerMin">25</h1>
-        <h1 class="mx-2">:</h1>
-        <h1 class="timerSec">00</h1>
-    </div>
-    <div>
-        <div class="flex justify-between align-center ">
-            <button id="startBtn" class="bg-green-500 text-black font-semibold rounded-md shadow-md houver:bg-green-600 focus:outline-none focus::ring-green-400">Start</button>
-            <button id="pauseBtn" class="bg-green-500 text-black font-semibold rounded-md shadow-md houver:bg-green-600 focus:outline-none focus::ring-green-400">Pause</button>
-            <button id="resetBtn" class="bg-green-500 text-black font-semibold rounded-md shadow-md houver:bg-green-600 focus:outline-none focus::ring-green-400">Reset</button>
+
+        <div class="text-6xl font-bold mb-8">
+            <span id="minutes">25</span>
+            <span>:</span>
+            <span id="seconds">00</span>
         </div>
-  
-</div>
 
+        <button id="startBtn" 
+                class="bg-green-500 hover:bg-green-600 text-black font-bold py-2 px-6 rounded-lg">
+            Start
+        </button>
+        <button id="stopBtn" 
+                class="bg-green-500 hover:bg-green-600 text-black font-bold py-2 px-6 rounded-lg">
+            Stop
+        </button>
+    </div>
 
-<script> 
-    let timerMin = document.getElementById('timerMin');
-    let timerSec = document.getElementById('timerSec');
+    <script>
+        let minutesDisplay = document.getElementById('minutes');
+        let secondsDisplay = document.getElementById('seconds');
+        let startButton = document.getElementById('startBtn');
+        let stopBtn = document.getElementById('stopBtn');
 
-    let startBtn = document.getElementById('startBtn');
-    let pauseBtn = document.getElementById('pauseBtn');
-    let resetBtn = document.getElementById('resetBtn');
+        let modeDisplay = document.getElementById('modeDisplay');
+        let pomodoroCountDisplay = document.getElementById('pomodoroCount');
 
-
-    let studyBlockTime = 25;
-    let min = 5;
-    let sec = 60;
-
-
-    
-    let studyRound = 4; 
-    let intervalid;
-
-
-    let isBreak = false;
-    let shortBreakVal = 5;
-    let longBreakVal = 15;
-
-    function displayTime(min, sec){
-
-        timerMin.textContent = `${String(min).padStart(2, '0')} : ${String(sec).padStart(2, '0')}`;
-    }
-
-    function startTimer(){
-        intervalid = setInterval(()=>{
-            // if (isBreak ==false){
-            //     min = studyBlockTime;
-            // }
-            // if (isBreak == true || studyRound > 0){ 
-            //     min = shortBreakVal;
-            // }
-            // if (isBreak == true && studyRound < 0){
-            //     min = longBreakVal;
-            // }
-
-            if(sec>0){
-                sec--;
-
-            } 
-            else if(min > 0) {
-                min --;
-                sec = 59;
+        const TIMER_MODES = {
+            POMODORO: {
+                duration: 7,
+                name: 'Focus Time'
+            },
+            SHORT_BREAK: {
+                duration:5, 
+                name: 'Short Break'
             }
-            else {
-                clearInterval(intervalid);
+        }
 
-                if(isBreak) {
-                    min = studyRound > 0 ? shortBreakVal : longBreakVal;
-                } else {
-                    min = studyBlockTime; 
-                    studyRound--;
+        let currentMode = TIMER_MODES.POMODORO; 
+
+        let pomodoroCount = 0; 
+
+        let minutes = currentMode.duration;
+        let seconds = 0;
+        let timerId = null;
+
+        let isRunning = false;
+
+        startButton.addEventListener('click', handleStartPause);
+
+        stopBtn.addEventListener('click', stopTimer);
+
+
+        function startTimer() {
+            timerId = setInterval(function() {
+                if (seconds > 0) {
+                    seconds = seconds - 1;
+                }
+                else if (minutes > 0) {
+                    minutes = minutes - 1;
+                    seconds = 59;
+                }
+                else {
+                    stopTimer();
+                    moveToNextState()
+
                 }
 
-                startTimer();
+                minutesDisplay.textContent = minutes;
+                secondsDisplay.textContent = seconds < 10 ? '0' + seconds : seconds;
+            }, 10);
+        }
+
+
+        function handleStartPause() {
+            if(isRunning) {
+                stopTimer(); 
+                isRunning = false; 
+                startButton.textContent = 'Start';
+            } else {
+                startTimer(); 
+                isRunning = true; 
+                startButton.textContent = 'Pause' 
             }
-            displayTime(min, sec);
-        }, 10)
-    }
+        }
+
+        function stopTimer() {
+            console.log(timerId);
+            clearInterval(timerId);
+            console.log(timerId);
+            timerId = null;
+            console.log(timerId);
+        }
 
 
 
-    startBtn.addEventListener('click', startTimer);
+        function moveToNextState() {
+            if(currentMode === TIMER_MODES.POMODORO) {
+                pomodoroCount ++
+                currentMode = TIMER_MODES.SHORT_BREAK;
 
-</script>
+            } 
+            else {
+                currentMode = TIMER_MODES.POMODORO;
+            }
+
+            minutes = currentMode.duration;
+            seconds = 0;
+
+            updateDisplay()
+        }
+
+
+        function updateDisplay() {
+            minutesDisplay.textContent = String(minutes).padStart(2, '0')
+            secondsDisplay.textContent = String(seconds).padStart(2, '0')
+
+
+            modeDisplay.textContent = currentMode.name;
+            pomodoroCountDisplay.textContent = pomodoroCount;
+        }
+    </script>
+
+
 
 </x-app-layout>
-
