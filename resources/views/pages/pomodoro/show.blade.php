@@ -24,108 +24,139 @@
     </div>
 
     <script>
-        let minutesDisplay = document.getElementById('minutes');
-        let secondsDisplay = document.getElementById('seconds');
-        let startButton = document.getElementById('startBtn');
-        let stopBtn = document.getElementById('stopBtn');
+     
 
-        let modeDisplay = document.getElementById('modeDisplay');
-        let pomodoroCountDisplay = document.getElementById('pomodoroCount');
 
-        const TIMER_MODES = {
-            POMODORO: {
-                duration: 7,
-                name: 'Focus Time'
-            },
-            SHORT_BREAK: {
-                duration:5, 
-                name: 'Short Break'
+     class PomodoroTimer {
+        constructor () {
+            this.TIMER_MODES = {
+                POMODORO: {
+                    duration: 25, 
+                    name: 'Focus Time',
+                    color: 'bg-red-500'
+                }, 
+                SHORT_BREAK: {
+                    duration: 5, 
+                    name: ' Short Break',
+                    color: 'bg-green-500'
+                
+                }, 
+                LONG_BREAK: {
+                    duration:15,
+                    name: 'Long Break',
+                    color: 'bg-blue-500'
+                }
             }
+
+
+            this.minutesDisplay = document.getElementById('minutes'); 
+            this.secondsDisplay = document.getElementById('seconds')
+            this.startButton = document.getElementById('startBtn')
+            this.stopButton = document.getElementById('stopBtn')
+            this.modeDisplay = document.getElementById('modeDisplay')
+            this.pomodoroCountDisplay = document.getElementById('pomodoroCount')
+        
+            this.currentMode = this.TIMER_MODES.POMODORO
+            this.minutes = this.currentMode.duration
+            this.seconds = 0
+            this.timerID= null
+            this.isRunning = false
+            this.pomodoroCount = 0; 
+
+
+            this.setupEventListeners()
+            this.updateDisplay()
         }
 
-        let currentMode = TIMER_MODES.POMODORO; 
+        setupEventListeners() {
 
-        let pomodoroCount = 0; 
+            this.startButton.addEventListener('click', this.handleStartPause.bind(this))
+            this.stopButton.addEventListener('click', this.handleStartPause.bind(this))
+            
+        }
 
-        let minutes = currentMode.duration;
-        let seconds = 0;
-        let timerId = null;
-
-        let isRunning = false;
-
-        startButton.addEventListener('click', handleStartPause);
-
-        stopBtn.addEventListener('click', stopTimer);
+        startTimer() {
 
 
-        function startTimer() {
-            timerId = setInterval(function() {
-                if (seconds > 0) {
-                    seconds = seconds - 1;
+            if(this.timerID !== null ){
+                return
+            }
+
+            this.timerID = setInterval(()=>{
+                if(this.seconds > 0 ){
+                    this.seconds --
+
+                    
                 }
-                else if (minutes > 0) {
-                    minutes = minutes - 1;
-                    seconds = 59;
+                else if(this.minutes > 0) {
+                    this.minutes-- 
+                    this.seconds = 59
+
                 }
                 else {
-                    stopTimer();
-                    moveToNextState()
-
+                    this.stopTimer()
+                    this.moveToNextState()
                 }
 
-                minutesDisplay.textContent = minutes;
-                secondsDisplay.textContent = seconds < 10 ? '0' + seconds : seconds;
-            }, 10);
+
+                this.updateDisplay();
+            }, 1000)
         }
 
 
-        function handleStartPause() {
-            if(isRunning) {
-                stopTimer(); 
-                isRunning = false; 
-                startButton.textContent = 'Start';
-            } else {
-                startTimer(); 
-                isRunning = true; 
-                startButton.textContent = 'Pause' 
+        stopTimer() {
+            if(this.timerID !==null) {
+                clearInterval(this.timerID)
+                this.timerID = null;
             }
         }
 
-        function stopTimer() {
-            console.log(timerId);
-            clearInterval(timerId);
-            console.log(timerId);
-            timerId = null;
-            console.log(timerId);
-        }
-
-
-
-        function moveToNextState() {
-            if(currentMode === TIMER_MODES.POMODORO) {
-                pomodoroCount ++
-                currentMode = TIMER_MODES.SHORT_BREAK;
-
-            } 
+        moveToNextState () {
+            if(this.currentMode === this.TIMER_MODES.POMODORO) {
+                this.pomodoroCount ++
+                if (this.pomodoroCount % 4 ===0) {
+                    this.currentMode = this.TIMER_MODES.LONG_BREAK;
+                    alert("Time for a long break")
+                } else {
+                    this.currentMode = this.TIMER_MODES.SHORT_BREAK
+                    alert("Time for a short break")
+                }
+            }
             else {
-                currentMode = TIMER_MODES.POMODORO;
+                this.currentMode = this.TIMER_MODES.POMODORO
+                alert("Time to focus")
             }
 
-            minutes = currentMode.duration;
-            seconds = 0;
-
-            updateDisplay()
+            this.minutes=this.currentMode.duration;
+            this.seconds = 0; 
+            this.isRunning = false
+            this.startButton.textContent = 'Start'
+            this.updateDisplay()
         }
 
 
-        function updateDisplay() {
-            minutesDisplay.textContent = String(minutes).padStart(2, '0')
-            secondsDisplay.textContent = String(seconds).padStart(2, '0')
-
-
-            modeDisplay.textContent = currentMode.name;
-            pomodoroCountDisplay.textContent = pomodoroCount;
+        handleStartPause() {
+            if (this.isRunning) {
+                this.stopTimer()
+                this.isRunning =false
+                this.startButton.textContent = 'Start'
+            } else {
+                this.startTimer()
+                this.isRunning =true
+                this.startButton.textContent = 'Pause'
+            }
+            this.updateDisplay();
         }
+
+        updateDisplay() {
+            this.minutesDisplay.textContent = String(this.minutes).padStart(2, '0');
+            this.secondsDisplay.textContent = String(this.seconds).padStart(2, '0');
+            this.modeDisplay.textContent = this.currentMode.name;
+            this.pomodoroCountDisplay.textContent = this.pomodoroCount; 
+        }
+     }
+
+     const timer = new PomodoroTimer();
     </script>
 
 
