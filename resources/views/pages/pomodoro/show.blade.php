@@ -21,6 +21,9 @@
                 class="bg-green-500 hover:bg-green-600 text-black font-bold py-2 px-6 rounded-lg">
             Stop
         </button>
+
+
+        <input> </input>
     </div>
 
     <script>
@@ -108,6 +111,7 @@
             if(this.timerID !==null) {
                 clearInterval(this.timerID)
                 this.timerID = null;
+                // theres a problem, when I click stop it starts the time
             }
         }
 
