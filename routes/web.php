@@ -37,6 +37,12 @@ Route::middleware('auth')->group(function () {
     // Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
     Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
     Route::get('/pomodoro', [PomodoroController::class, 'show'])->name('pomodoro.show');
+
+    Route::post('/api/pomodoro/start', [PomodoroController::class, 'start'])->name('pomodoro.start');
+    Route::post('/api/pomodoro/complete', [PomodoroController::class, 'complete'])->name('pomodoro.complete');
+
+
+
 });
 
 require __DIR__.'/auth.php';

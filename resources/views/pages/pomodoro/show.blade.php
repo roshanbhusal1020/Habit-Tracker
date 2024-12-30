@@ -23,7 +23,7 @@
         </button>
 
 
-        <input> </input>
+        <input type="text" id="taskInput" class="border rounded-lg px-4 py-2 w-full max-w-md"> </input>
     </div>
 
     <script>
@@ -36,22 +36,23 @@
                 POMODORO: {
                     duration: 25, 
                     name: 'Focus Time',
-                    color: 'bg-red-500'
+
                 }, 
                 SHORT_BREAK: {
                     duration: 5, 
                     name: ' Short Break',
-                    color: 'bg-green-500'
-                
+
+                    
                 }, 
                 LONG_BREAK: {
                     duration:15,
                     name: 'Long Break',
-                    color: 'bg-blue-500'
-                }
+
+                    }
             }
 
-
+            this.currentSessionId = null;
+            this.taskInput = document.getElementById('taskInput');
             this.minutesDisplay = document.getElementById('minutes'); 
             this.secondsDisplay = document.getElementById('seconds')
             this.startButton = document.getElementById('startBtn')
@@ -78,12 +79,36 @@
             
         }
 
-        startTimer() {
+        async startTimer() {
 
 
             if(this.timerID !== null ){
                 return
             }
+
+
+            try {
+                const response = await fetch('/api/pomodoro/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    task_name: this.taskInput.value,
+                    type: this.currentMode.name,
+                    duration: this.currentMode.duration
+                })
+            });
+
+            const data = await response.json();
+            this.currentSessionId = data.id;  // Store the session ID
+            console.log(this.currentSessionId)
+
+        } catch (error) {
+            console.error('Failed to start session:', error);
+        }
+
 
             this.timerID = setInterval(()=>{
                 if(this.seconds > 0 ){
@@ -103,7 +128,7 @@
 
 
                 this.updateDisplay();
-            }, 1000)
+            }, 1)
         }
 
 
@@ -115,7 +140,27 @@
             }
         }
 
-        moveToNextState () {
+        async moveToNextState () {
+
+            console.log(this.currentSessionId)
+            if (this.currentSessionId) {
+            try {
+                await fetch('/api/pomodoro/complete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: JSON.stringify({
+                        session_id: this.currentSessionId
+                    })
+                });
+            } catch (error) {
+                console.error('Failed to complete session:', error);
+            }
+        }
+
+
             if(this.currentMode === this.TIMER_MODES.POMODORO) {
                 this.pomodoroCount ++
                 if (this.pomodoroCount % 4 ===0) {
