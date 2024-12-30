@@ -6,6 +6,8 @@ use App\Http\Controllers\JournalController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PomodoroController;
+use App\Http\Controllers\TodoController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -40,6 +42,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/api/pomodoro/start', [PomodoroController::class, 'start'])->name('pomodoro.start');
     Route::post('/api/pomodoro/complete', [PomodoroController::class, 'complete'])->name('pomodoro.complete');
+
+    Route::get('/todo', [TodoController::class, 'show'])->name('todo.show');
 
 
 
