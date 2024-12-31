@@ -72,9 +72,19 @@
                                     @method('PATCH')
                                     <!-- <input type="hidden" name="id" value="{{ $todo->id }}">  -->
                                     <button type="submit">
-                                        {{ $todo->complete ? 'DONE' : 'Mark Complete' }}
+                                        {{ $todo->completed ? 'DONE' : 'Mark Complete' }}
                                     </button>
                                 </form>
+                                </td>
+
+                                <td>
+                                    <form action="{{route('todos.destroy', $todo)}}" method="POST">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit">
+                                            Delete
+                                        </button>
+                                    </form>
                                 </td>
                             
                             </tr>    

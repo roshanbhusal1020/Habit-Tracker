@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/todos', [TodoController::class, 'index'])->name('todo.index');
     Route::post('/todos', [TodoController::class, 'store'])->name('todos.store');
     Route::patch('/todos/{todo}/toggle', [TodoController::class, 'toggle'])->name('todos.toggle');
+    Route::delete('/todos/{todo}', [TodoController::class, 'destroy'])->name('todos.destroy');
 
 
 
