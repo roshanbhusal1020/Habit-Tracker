@@ -43,7 +43,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/pomodoro/start', [PomodoroController::class, 'start'])->name('pomodoro.start');
     Route::post('/api/pomodoro/complete', [PomodoroController::class, 'complete'])->name('pomodoro.complete');
 
-    Route::get('/todo', [TodoController::class, 'show'])->name('todo.show');
+    Route::get('/todos', [TodoController::class, 'index'])->name('todo.index');
+    Route::post('/todos', [TodoController::class, 'store'])->name('todos.store');
+
 
 
 
