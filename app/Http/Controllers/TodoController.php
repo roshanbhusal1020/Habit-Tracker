@@ -19,10 +19,30 @@ class TodoController extends Controller
     }
 
     public function store(Request $request) {
-        dump($request);
+        // dump($request);
+
+        //I should validate this data. 
 
         // $todos= auth()->user()->todos()->create()
         return response()->json(['request'=> $request]);
     }
    
+    public function toggle(Request $request) {
+ 
+
+        dump($request->id);
+        return response()->json([
+            'all' => $request->all(),
+            'route_parameters' => $request->route(),
+        ]);
+
+
+    }
+
+//     public function toggle(Todo $todo)
+// {
+//     $todo->update(['complete' => !$todo->complete]);
+
+//     return redirect()->route('todo.index')->with('success', $todo);
+// }
 }

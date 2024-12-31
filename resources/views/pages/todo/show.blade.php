@@ -41,6 +41,49 @@
                         </button>
                     </form>
                 </div>
+                <div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Due Date</th>
+                                <th> Priority</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($todos as  $todo)
+                            <tr>
+                                <td>{{$todo->task}}</td>
+                                <td>{{$todo->due_date}}</td>
+                                <td> <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                            {{ $todo->priority == 0 ? 'bg-gray-100 text-gray-800' : '' }}
+                                            {{ $todo->priority == 1 ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                            {{ $todo->priority == 2 ? 'bg-red-100 text-red-800' : '' }}">
+                                            {{ ['Low', 'Medium', 'High'][$todo->priority] }} 
+                                            <!-- This basically an array. so if priority value is 2, it will show High and if its 0 then Low. noting complicated -->
+                                        </span></td>
+                                
+                                <td>
+                                <form action="{{ route('todos.toggle', $todo->id) }}" method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <!-- <input type="hidden" name="id" value="{{ $todo->id }}">  -->
+                                    <button type="submit">
+                                        {{ $todo->complete ? 'DONE' : 'Mark Complete' }}
+                                    </button>
+                                </form>
+                                </td>
+                            
+                            </tr>    
+
+                            @endforeach
+                            
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
         </div>
