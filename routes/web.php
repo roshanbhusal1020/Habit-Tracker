@@ -48,7 +48,9 @@ Route::middleware('auth')->group(function () {
     Route::patch('/todos/{todo}/toggle', [TodoController::class, 'toggle'])->name('todos.toggle');
     Route::delete('/todos/{todo}', [TodoController::class, 'destroy'])->name('todos.destroy');
 
-
+    Route::get('/todos/{todo}/edit', [TodoController::class, 'edit'])->name('todos.edit');
+    Route::patch('/todos/{todo}', [TodoController::class, 'update'])->name('todos.update');
+    
 
 
 

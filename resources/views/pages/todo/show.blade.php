@@ -77,7 +77,7 @@
                                 </form>
                                 </td>
 
-                                <td>
+                                <td style="display:flex; justify-content:space-between;">
                                     <form action="{{route('todos.destroy', $todo)}}" method="POST">
                                         @csrf
                                         @method('DELETE')
@@ -85,6 +85,15 @@
                                             Delete
                                         </button>
                                     </form>
+
+                                    <form action="{{route('todos.edit', $todo)}}" method="GET">
+
+                                    <button type="submit">
+                                            Edit
+                                        </button>
+                                    </form>
+                       
+                                </td>
                                 </td>
                             
                             </tr>    

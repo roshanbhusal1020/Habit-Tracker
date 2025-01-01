@@ -26,6 +26,30 @@ class TodoController extends Controller
         // $todos= auth()->user()->todos()->create()
         return response()->json(['request'=> $request]);
     }
+
+
+    public function edit (Todo $todo) {
+
+
+        // return redirect()->route('pages.todo.edit', compact('todo'));
+        return view('pages.todo.edit', compact('todo'));
+    }
+
+    public function update(Request $request, Todo $todo) {
+
+
+
+        $validated = $request->validate([
+            'task' => 'required|string|max:255',
+            'due_date' => 'nullable|date', 
+            'priority' =>'required|integer|between:0,2'
+        ]);
+
+        $todo->update($validated);
+
+        return redirect()->route('todo.index')->with(['success'=> $todo]);
+        // return response()->json(['request' => $request, 'updatedInfo'=> $todo]);
+    }
    
     public function toggle(Todo $todo) 
     // this seems better than Request $request, because this directly fetches the Class data. 
