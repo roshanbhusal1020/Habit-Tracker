@@ -52,6 +52,15 @@
                 </x-dropdown>
             </div>
 
+
+            <div class="relative inline-block">
+                <i class="fas fa-bell text-gray-600 hover:text-gray-800 cursor-pointer"></i>
+
+                <div class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    3
+                </div>
+            </div>
+
             <!-- Hamburger -->
             <div class="-me-2 flex items-center sm:hidden">
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
