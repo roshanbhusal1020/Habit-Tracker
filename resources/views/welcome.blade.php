@@ -51,53 +51,6 @@
     }
 </style>
 
-<table border="1">
-    <tr> 
-        <td>
-            <ul>
-                <li>Habit tracker table</li>
-                <li> -> With small highlighting journal like 'I got job on this day'</li>
-            </ul>
-        </td>
-        <td>
-            <ul>
-                <li>Journal</li>
-                <li> -> Can show option or tick saying it contains a journal on that day</li>
-            </ul>
-        </td>
-        <td>
-            <ul>
-                <li>To-do list</li>
-                <li> ->A chart showing the number of todos completed or not (QuickChart?)</li>
-            </ul>
-        </td>
-        <td>
-            <ul>
-                <li>Bucket list</li>
-            </ul>
-        </td>
-        <td>
-            <ul>
-                <li>What I want my life to be in the next 1-5-10 years</li>
-            </ul>
-        </td>
-        <td>
-            <ul>
-                <li>What I am grateful for</li>
-            </ul>
-        </td>
-    </tr>        
-</table>
-
-<!-- 
-        ->habit tracker table ->with small highlighting journal like 'I got job on this day'
-->Journal -> can show option or tick saying it contains journal on that day
-->To do list;  a chart of showing amount of todos completed or not ->quickchart ??
--> bucket lst
--> what I want my life to be in next 1-5-10 years
--> What I am grateful for
-->  -->
-
         </div>
         </div>
 

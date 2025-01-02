@@ -22,7 +22,7 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Header with Add Button -->
             <div class=" flex justify-between items-center">
-                <h2 class="text-2xl font-bold">December 2024</h2>
+                <!-- <h2 class="text-2xl font-bold">December 2024 </h2> -->
                 <button class="bg-red-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded">
                     Add New Habit
                 </button>
@@ -41,7 +41,7 @@
                                     Working Hours
                                 </th> -->
                                 @foreach($habits as $habit)
-                                   @if ($habit->name != "Mood" && $habit->name != "Productivity" && $habit->name != "Note" && !$habit->deleted_at)
+                                   @if ($habit->name != "Mood" && $habit->name != "Productivity" && $habit->name != "Note" && (!$habit->deleted_from || $habit->deleted_from > $targetDate->format('Y-m-d')))
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" >{{ $habit->name }} 
 
                                 <button class="ml-2 text-red-500 hover:text-red-700" 
@@ -83,7 +83,7 @@
                     placeholder="9-17">
             </td> -->
             @foreach($habits as $habit)
-                @if (($habit->name != 'Mood') && ($habit->name != 'Productivity') && ($habit->name != 'Note'))
+                @if (($habit->name != 'Mood') && ($habit->name != 'Productivity') && ($habit->name != 'Note') && (!$habit->deleted_from || $habit->deleted_from > $targetDate->format('Y-m-d')))
                 <td class="px-6 py-4 whitespace-nowrap">
                     <input type="checkbox" 
                         onchange="saveEntry('{{$habit['name']}}', this, '{{$habit['id']}}', '{{$date['full_date']}}')"

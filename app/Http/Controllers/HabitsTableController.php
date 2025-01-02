@@ -6,6 +6,7 @@ use App\Models\Habit;
 use App\Models\HabitEntry;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Log;  
 use Illuminate\Support\Facades\DB;
 
@@ -82,7 +83,7 @@ class HabitsTableController extends Controller
         // dump($productivityHabit);
         
     
-        return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'noteHabit', 'previousMonth', 'nextMonth', 'currentMonthDisplay'));
+        return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'noteHabit', 'previousMonth', 'nextMonth', 'currentMonthDisplay', 'targetDate'));
     }
 
     // public function edit ($id) 
@@ -90,15 +91,50 @@ class HabitsTableController extends Controller
     
     // }
 
-    public function store (Request $request ) 
+    public function store(Request $request)
     {
-        $habit = new Habit;
-        $habit->user_id = auth()->id();
-        $habit->name = $request->name; 
-        $habit->type = $request->type;
-        $habit->save();
 
-        return redirect()->route('habits.show');
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string'
+        ]);
+    
+        try {
+            // Check for existing habit including those marked as "deleted"
+            $existingHabit = Habit::where('user_id', auth()->id())
+                ->where('name', $request->name)
+                ->first();
+    
+            if ($existingHabit) {
+                if ($existingHabit->deleted_from) {
+                    // If the habit was previously "deleted", clear the deleted_from date
+                    $existingHabit->update([
+                        'deleted_from' => null,
+                        'type' => $request->type // Update type in case it changed
+                    ]);
+    
+                    return redirect()->route('habits.show')
+                        ->with('success', 'Habit restored successfully');
+                } else {
+                    return redirect()->route('habits.show')
+                        ->with('error', 'A habit with this name already exists');
+                }
+            }
+    
+
+            $habit = new Habit;
+            $habit->user_id = auth()->id();
+            $habit->name = $request->name;
+            $habit->type = $request->type;
+            $habit->save();
+    
+            return redirect()->route('habits.show')
+                ->with('success', 'Habit created successfully');
+    
+        } catch (\Exception $e) {
+            return redirect()->route('habits.show')
+                ->with('error', 'Failed to create habit');
+        }
     }
 
     public function storeEntry(Request $request) 
@@ -166,19 +202,32 @@ class HabitsTableController extends Controller
 
 
 
-    public function destroy(Request $request, Habit $habit ) {
+    public function destroy(Request $request, Habit $habit)
+    {
         try {
-            $habit->update(['deleted_from'=> now()->startOfMonth()->format('Y-m-d')]); 
-            $habit->save();
+            if ($habit->user_id !== auth()->id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+    
+            DB::beginTransaction();
+            
 
-            $habit->delete();
+            $habit->update([
+                'deleted_from' => now()->startOfMonth()->format('Y-m-d')
+            ]);
+            
             DB::commit();
-
-            return response()->json(['success'=>true, 'meessage'=> 'habit successfully deleted']);
-        } catch(\Exception $e ) {
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Habit successfully deleted'
+            ]);
+        } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error'=>'Failed to delete habit', 'details'=> $e->getMessage()]);
+            return response()->json([
+                'error' => 'Failed to delete habit',
+                'details' => $e->getMessage()
+            ], 500);
         }
-        
     }
 }
