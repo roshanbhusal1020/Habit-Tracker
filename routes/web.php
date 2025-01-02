@@ -35,9 +35,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/habits', [HabitsTableController::class, 'show'])->name('habits.show');
     Route::post('/habits/entry', [HabitsTableController::class, 'store'])->name('habits.store');
-
     // Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
     Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
+    Route::delete('/habits/{habit}', [HabitsTableController::class, 'destroy'])->name('habits.destroy');
+    
+
     Route::get('/pomodoro', [PomodoroController::class, 'show'])->name('pomodoro.show');
 
     Route::post('/api/pomodoro/start', [PomodoroController::class, 'start'])->name('pomodoro.start');

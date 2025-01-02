@@ -9,7 +9,8 @@ class Habit extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'type']; 
+    protected $fillable = ['name', 'type', 'deleted_from', 'deleted_at']; 
+    protected $dates = ['deleted_at', 'deleted_from'];
 
     public function entries() {
         return $this->hasMany(HabitEntry::class);

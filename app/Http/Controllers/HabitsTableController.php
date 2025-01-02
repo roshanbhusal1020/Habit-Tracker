@@ -7,24 +7,33 @@ use App\Models\HabitEntry;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;  
+use Illuminate\Support\Facades\DB;
+
 
 
 
 class HabitsTableController extends Controller
 {
-    public function show()
+    public function show(Request $request)
     {
 
         dump(auth()->id()); 
 
-        $habits = Habit::where('user_id', auth()->id())->get();
-        
-        // Generate all dates for the current month
-        $currentDate = now()->startOfMonth();
-        $endOfMonth = now()->endOfMonth();
+        $targetDate = $request->date ? Carbon::parse($request->date) : now();
 
-        $startOfMonth = \Carbon\Carbon::now()->startOfMonth();
-        $daysInMonth = \Carbon\Carbon::now()->daysInMonth;
+
+        $habits = Habit::where('user_id', auth()->id())
+        ->where(function($query) use ($targetDate) {
+            $query->whereNull('deleted_from')
+                  ->orWhere('deleted_from', '>', $targetDate->format('Y-m-d'));
+        })
+        ->get();        
+        // Generate all dates for the current month
+        // $currentDate = now()->startOfMonth();
+        // $endOfMonth = now()->endOfMonth();
+
+        $startOfMonth = $targetDate->copy()->startOfMonth();
+        $daysInMonth = $targetDate->daysInMonth;
         // dump($daysInMonth);
         $dates = collect();
         
@@ -54,24 +63,32 @@ class HabitsTableController extends Controller
 
 
         $entries = HabitEntry::where('user_id', auth()->id())
-                    ->whereMonth('entry_date', now()->month)
-                    ->whereYear('entry_date', now()->year)
+                    ->whereMonth('entry_date', $targetDate->month)
+                    ->whereYear('entry_date', $targetDate->year)
                     ->get()
                     ->groupBy('entry_date');
-        dump($entries);
-        dump($dates);
+
+
+
+        $previousMonth = $targetDate->copy()->subMonth()->format('Y-m-d');
+        $nextMonth = $targetDate->copy()->addMonth()->format('Y-m-d');
+        $currentMonthDisplay = $targetDate->format('F Y');
+
+
+        // dump($entries);
+        // dump($dates);
         dump($habits);
-        dump($moodHabit);
-        dump($productivityHabit);
+        // dump($moodHabit);
+        // dump($productivityHabit);
         
     
-        return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'noteHabit'));
+        return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'noteHabit', 'previousMonth', 'nextMonth', 'currentMonthDisplay'));
     }
 
-    public function edit ($id) 
-    {
+    // public function edit ($id) 
+    // {
     
-    }
+    // }
 
     public function store (Request $request ) 
     {
@@ -86,7 +103,7 @@ class HabitsTableController extends Controller
 
     public function storeEntry(Request $request) 
     {
-        // First validate the request
+
         $validated = $request->validate([
             'habit_id' => 'required|exists:habits,id',
             'date' => 'required|date',
@@ -94,7 +111,7 @@ class HabitsTableController extends Controller
         ]);
 
     
-        // Check authentication
+
         if(!auth()->check()) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
@@ -145,5 +162,23 @@ class HabitsTableController extends Controller
                 'details' => $e->getMessage()
             ], 500);
         }
+    }
+
+
+
+    public function destroy(Request $request, Habit $habit ) {
+        try {
+            $habit->update(['deleted_from'=> now()->startOfMonth()->format('Y-m-d')]); 
+            $habit->save();
+
+            $habit->delete();
+            DB::commit();
+
+            return response()->json(['success'=>true, 'meessage'=> 'habit successfully deleted']);
+        } catch(\Exception $e ) {
+            DB::rollBack();
+            return response()->json(['error'=>'Failed to delete habit', 'details'=> $e->getMessage()]);
+        }
+        
     }
 }

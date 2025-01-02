@@ -5,6 +5,20 @@
         </div>
     @endif  NEED TO WORK ON THIS AS ITS IMPORTANT TO LET USER KNOW IT WAS SUCCESSFULLY ADDED A HABIT OR ANYTING -->
     <div class="py-12">
+
+        <div>
+                <a href="{{route('habits.show', ['date'=>$previousMonth])}}">
+                    Previous
+                </a>
+                <h2>{{$currentMonthDisplay}}</h2>
+                <a href="{{route('habits.show', ['date'=>$nextMonth])}}">
+                    Next
+                </a>
+
+
+        </div>
+
+
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Header with Add Button -->
             <div class=" flex justify-between items-center">
@@ -27,8 +41,16 @@
                                     Working Hours
                                 </th> -->
                                 @foreach($habits as $habit)
-                                   @if ($habit->name != "Mood" && $habit->name != "Productivity")
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" >{{ $habit->name }}</th>
+                                   @if ($habit->name != "Mood" && $habit->name != "Productivity" && $habit->name != "Note" && !$habit->deleted_at)
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" >{{ $habit->name }} 
+
+                                <button class="ml-2 text-red-500 hover:text-red-700" 
+                                onclick="deleteHabit({{ $habit->id }}, '{{ $habit->name }}')"
+                                 
+                                 >X</button>
+
+
+                                </th>
                                        
                                    @endif
                                     
@@ -61,7 +83,7 @@
                     placeholder="9-17">
             </td> -->
             @foreach($habits as $habit)
-                @if (($habit->name != 'Mood') && ($habit->name != 'Productivity'))
+                @if (($habit->name != 'Mood') && ($habit->name != 'Productivity') && ($habit->name != 'Note'))
                 <td class="px-6 py-4 whitespace-nowrap">
                     <input type="checkbox" 
                         onchange="saveEntry('{{$habit['name']}}', this, '{{$habit['id']}}', '{{$date['full_date']}}')"
@@ -274,6 +296,34 @@
             console.error('Error:', error)
         })
          
+    }
+
+    function deleteHabit(habitId, habitName) {
+
+        console.log(habitId, habitName)
+        if(confirm(`Are you sure want to delete the habit "${habitName}" ?`)) {
+            fetch(`/habits/${habitId}`, {  
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+
+                    window.location.reload();
+                } else {
+                    alert('Failed to delete habit: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete habit');
+            });
+        }
     }
 </script>
 </x-app-layout>
