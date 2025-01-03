@@ -7,6 +7,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\TodoController;
+// use App\Http\Controllers\StatsController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -54,6 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/todos/{todo}', [TodoController::class, 'update'])->name('todos.update');
     
 
+    // Route::get('/stats', [StatsController::class, 'index'])->middleware(['auth'])->name('stats.dashboard');
 
 
 });
