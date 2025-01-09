@@ -6,6 +6,7 @@ use App\Http\Controllers\JournalController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PomodoroController;
+use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TodoController;
 // use App\Http\Controllers\StatsController;
 
@@ -55,9 +56,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/todos/{todo}/edit', [TodoController::class, 'edit'])->name('todos.edit');
     Route::patch('/todos/{todo}', [TodoController::class, 'update'])->name('todos.update');
     
+    // Route::get('api/pomodoro/stats', [StatsController::class, 'getPomodoroStats'])->name('stats.getPomodoroStats');
+    Route::get('stats/pomodoro', [StatsController::class, 'getPomodoroStats'])->name('stats.pomodoro');
 
-    // Route::get('/stats', [StatsController::class, 'index'])->middleware(['auth'])->name('stats.dashboard');
 
+
+    
 
 });
 

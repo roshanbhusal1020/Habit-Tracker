@@ -19,12 +19,14 @@ class TodoController extends Controller
     }
 
     public function store(Request $request) {
-        // dump($request);
+        $validated = $request->validate([
+            'task' => 'required|string|max:255',
+            'due_date' => 'nullable|date',
+            'priority' => 'required|integer|between:0,2',
+        ]);
 
-        //I should validate this data. 
-
-        // $todos= auth()->user()->todos()->create()
-        return response()->json(['request'=> $request]);
+        $todos= auth()->user()->todos()->create($validated);
+        return redirect()->route('todo.index')->with(['success'=> 'Task added successfully']);
     }
 
 
@@ -68,7 +70,7 @@ class TodoController extends Controller
         // $this->authorize('delete', $todo);
 
         $todo->delete();
-        return response()->json(['request'=> $todo]);
+        return redirect()->route('todo.index')->with('success', 'Task deleted successfully!');
         // return redirect()->route('todo.index')->with('success', 'Task deleted successfully');
     }
 
