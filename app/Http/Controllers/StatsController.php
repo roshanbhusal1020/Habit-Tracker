@@ -77,7 +77,10 @@ class StatsController extends Controller
             // dump($productiveTimeSlots);
             // dump($totalFocusHours);
 
-            
+   // !!VERY IMPORTANT!!         
+   // which dates tasks were completed + emotional/productivity state from the habit table
+   // !!VERY IMPORTANT!!         
+
 
         return view('stats.show', compact(
             'totalFocusHours',
@@ -98,8 +101,20 @@ class StatsController extends Controller
     }
 
     public function getTodoListStats() {
-        //completion
+        //completion rate- total completed; percentage of tasks completed
 
+        // amount of priority lists (a break down of the list)
 
+        // how long it took to finish the list on average
+
+        //days when the tasks were completed
+
+        // % of tasks completed(or not) before or after due_date (Punchuality)
+
+        //upcoming deadlines
+
+        // !!VERY IMPORTANT!!         
+        // which dates tasks were completed + emotional/productivity state from the habit table
+        // !!VERY IMPORTANT!!         
     }
 }
