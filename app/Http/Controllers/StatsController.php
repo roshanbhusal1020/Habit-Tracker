@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Habit;
 use App\Models\Pomodoro;
+use App\Models\Todo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -97,7 +99,14 @@ class StatsController extends Controller
     // }
 
     public function getHabitTableStats() {
+        // !!VERY IMPORTANT!!         
+        // which dates tasks were completed + emotional/productivity state from the habit table
+        // !!VERY IMPORTANT!!  
         
+        $habits = Habit::where('user_id', auth()->id());
+
+        return view('stats.habitChart.show', compact('habits'));
+
     }
 
     public function getTodoListStats() {
@@ -113,8 +122,75 @@ class StatsController extends Controller
 
         //upcoming deadlines
 
-        // !!VERY IMPORTANT!!         
-        // which dates tasks were completed + emotional/productivity state from the habit table
-        // !!VERY IMPORTANT!!         
+
+        //completion rate
+        $todos = Todo::where('user_id', auth()->id());
+
+        $allTodos = $todos->count();
+        $completedTodos = $todos->clone()->where('completed', true)->count(); 
+        $completionRate = $allTodos > 0 ? ($completedTodos / $allTodos) * 100 : 0;
+
+
+        // priority distribution 
+
+        $priorityDistribution = $todos->clone()
+                                ->select('priority', DB::raw('COUNT(*) as count'))
+                                ->groupBy('priority')
+                                ->get()
+                                ->mapWithKeys(function($item){
+                                    $priority = match($item->priority) { // this is a really useful function, I could reuse it later.
+                                        0 => 'Low',
+                                        1 => 'Medium',
+                                        2 => 'High', 
+                                        default => 'Unknown'
+                                    };
+                                    return [$priority => $item->count];
+                                });
+
+        //punchuality
+
+        $punchualityStats = [
+            'onTime' => $todos->clone()
+                ->where('completed', true)
+                ->whereNotNull('due_date')
+                ->whereColumn('updated_at', '<=', 'due_date') 
+                ->count(), 
+            'Late' => $todos->clone()
+                ->where('completed', true)
+                ->whereNotNull('due_date')
+                ->whereColumn('updated_at', '>', 'due_date')
+                ->count(), 
+            'Overdue' => $todos->clone()
+                ->where('completed', false)
+                ->whereNotNull('due_date')
+                ->where('updated_at', '<', now())
+                ->count()
+
+            
+        ];
+
+        $completionTimeline = $todos->clone()
+                ->where('completed', true)
+                ->select(DB::raw('DATE(updated_at) as date'), DB::raw('COUNT(*) as count'))
+                ->groupBy('date')
+                ->orderBy('date')
+                ->get();
+
+        $upcomingDeadlines = $todos->clone()
+                ->where('completed', false)
+                ->whereNotNull('due_date')
+                ->where('due_date', '>=', now())
+                ->orderBy('due_date')
+                ->take(5)
+                ->get();
+        dump($completionRate, $priorityDistribution, $punchualityStats, $upcomingDeadlines, $completionTimeline );
+
+        return view('stats.todoChart.show', compact('completionRate',
+                                                    'priorityDistribution',
+                                                    'punchualityStats',
+                                                    'completionTimeline', 
+                                                    'upcomingDeadlines'
+                                                ));
+      
     }
 }

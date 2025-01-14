@@ -74,11 +74,13 @@ function createBarChart(elementId, labels, data, label = 'Value') {
 
 // rhis initialises the chart when the page is loaded
 document.addEventListener('DOMContentLoaded', function() {
+
+    //POMODORO START
     // Task Distribution Chart
     const taskChart = document.getElementById('taskDistributionChart');
     if (taskChart) {
         createPieChart(
-            'taskDistributionChart',
+            'taskDistributionChart', // this is used for todo, as well but I should organise this better for no confusion
             JSON.parse(taskChart.dataset.labels),
             JSON.parse(taskChart.dataset.values)
         );
@@ -115,4 +117,18 @@ document.addEventListener('DOMContentLoaded', function() {
             JSON.parse(breakChart.dataset.values)
         );
     }
+    //POMODORO END
+
+    //TODO START
+    const todoTaskCompletion = document.getElementById('todoTaskCompletion');
+    if(todoTaskCompletion) {
+        createLineChart('todoTaskCompletion',
+            JSON.parse(todoTaskCompletion.dataset.labels),
+            JSON.parse(todoTaskCompletion.dataset.values),
+            'Number of todos completed'
+
+        );
+    }
+
+
 });

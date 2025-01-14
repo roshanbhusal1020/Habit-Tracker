@@ -58,6 +58,9 @@ Route::middleware('auth')->group(function () {
     
     // Route::get('api/pomodoro/stats', [StatsController::class, 'getPomodoroStats'])->name('stats.getPomodoroStats');
     Route::get('stats/pomodoro', [StatsController::class, 'getPomodoroStats'])->name('stats.pomodoro');
+    Route::get('stats/todo', [StatsController::class, 'getTodoListStats'])->name('stats.todo');
+    Route::get('stats/habit', [StatsController::class, 'getHabitTableStats'])->name('stats.habit');
+
 
 
 
