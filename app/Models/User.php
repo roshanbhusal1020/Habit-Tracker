@@ -46,4 +46,8 @@ class User extends Authenticatable
     public function habits() {
         return $this->hasMany(Habit::class); 
     }
+
+    public function todos() {
+        return $this->hasMany(Todo::class);
+    }
 }

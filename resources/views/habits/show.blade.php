@@ -1,20 +1,45 @@
 <x-app-layout>
-    <!-- @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
-            <span class="block sm:inline">{{ session('success') }}</span>
+
+<div class="py-12">
+        <div class="flex justify-center items-center space-x-4 mb-6">
+            <a href="{{route('habits.show', ['date'=>$previousMonth])}}" 
+               class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                &larr; Previous Month <!-- larr is just left arrow '<-' similaryly rarr is right arrow -->
+            </a> 
+            <h2 class="text-2xl font-bold">{{$currentMonthDisplay}}</h2>
+            <a href="{{route('habits.show', ['date'=>$nextMonth])}}" 
+               class="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors">
+                Next Month &rarr;
+            </a>
         </div>
-    @endif  NEED TO WORK ON THIS AS ITS IMPORTANT TO LET USER KNOW IT WAS SUCCESSFULLY ADDED A HABIT OR ANYTING -->
-    <div class="py-12">
+
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Header with Add Button -->
-            <div class=" flex justify-between items-center">
-                <h2 class="text-2xl font-bold">December 2024</h2>
-                <button class="bg-red-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded">
+            
+            {{-- Success Message --}}
+            @if(session('success'))
+                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" 
+                     role="alert">
+                    <span class="block sm:inline">{{ session('success') }}</span>
+                </div>
+            @endif
+
+            {{-- Error Message --}}
+            @if(session('error'))
+                <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" 
+                     role="alert">
+                    <span class="block sm:inline">{{ session('error') }}</span>
+                </div>
+            @endif
+
+            {{-- Add Habit Button --}}
+            <div class="flex justify-between items-center mb-4">
+                <button onclick="openHabitModal()" 
+                        class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors">
                     Add New Habit
                 </button>
             </div>
 
-            <!-- Main Table -->
+            {{-- Main Table --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 bg-white border-b border-gray-200 overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -23,174 +48,153 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Date
                                 </th>
-                                <!-- <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Working Hours
-                                </th> -->
+                                
+                                {{-- Regular Habits --}}
                                 @foreach($habits as $habit)
-                                   @if ($habit->name != "Mood" && $habit->name != "Productivity")
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" >{{ $habit->name }}</th>
-                                       
-                                   @endif
-                                    
+                                    @php
+                                        $habitMonthYear = $habit->month_year ? Carbon\Carbon::parse($habit->month_year)->format('Y-m') : null;
+                                        $targetMonthYear = $targetDate->format('Y-m');
+                                        $isDeleted = $habit->deleted_from && Carbon\Carbon::parse($habit->deleted_from)->lte($targetDate);
+                                    @endphp
+
+                                    @if (!in_array($habit->name, ['Mood', 'Productivity', 'Note']) && 
+                                        !$isDeleted &&
+                                        ($habitMonthYear === null || $habitMonthYear === $targetMonthYear))
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            {{ $habit->name }}
+                                            <button class="ml-2 text-red-500 hover:text-red-700"
+                                                    onclick="deleteHabit({{ $habit->id }}, '{{ $habit->name }}')">
+                                                ×
+                                            </button>
+                                        </th>
+                                    @endif
                                 @endforeach
+
+                                {{-- Fixed Columns --}}
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Productivity
+                                    Productivity
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Mood
+                                    Mood
                                 </th>
-                                <!-- I need to add mood and producitivty sepatrtly and remove from the habit like the follwoing code -->
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Notes
                                 </th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            <!-- Day 1 -->
-                        
-                            <tbody class="bg-white divide-y divide-gray-200">
-    <!-- Let's just show 5 days manually first -->
-    @foreach ($dates as $date)
-        <tr>
-            <td class="px-6 py-4 whitespace-nowrap">
-                {{ $date['formatted'] }}
-            </td>
-            <!-- <td class="px-6 py-4 whitespace-nowrap">
-                <input type="text" 
-                    class="form-input rounded-md shadow-sm mt-1 block w-full"
-                    placeholder="9-17">
-            </td> -->
-            @foreach($habits as $habit)
-                @if (($habit->name != 'Mood') && ($habit->name != 'Productivity'))
-                <td class="px-6 py-4 whitespace-nowrap">
-                    <input type="checkbox" 
-                        onchange="saveEntry('{{$habit['name']}}', this, '{{$habit['id']}}', '{{$date['full_date']}}')"
-                        data-habit= "{{$habit->id}}"
-                        data-day="{{$date['full_date']}}"
-                        class="form-checkbox h-5 w-5 text-blue-600" 
-                     @if(isset($entries[$date['full_date']]))
-                            @foreach($entries[$date['full_date']] as $entry)
-                           @if ($entry['habit_id'] == $habit->id && $entry['value'] ==1)
-                               checked
-                           @endif
-                                @endforeach                                
-                            @endif
-                        >
-                   
-                </td>      
-                @endif
-              
-            @endforeach
-            <td class="px-6 py-4 whitespace-nowrap">
-    <select class="form-select rounded-md shadow-sm mt-1 block w-full" 
-            onchange="saveMood('productivity', this.value, {{$productivityHabit->id}}, '{{$date['full_date']}}')">
-        <option value="">Select</option>
-        <option value="productive" 
-            @if(isset($entries[$date['full_date']]))
-                @foreach($entries[$date['full_date']] as $entry)
-                    @if($entry->habit_id == $productivityHabit->id && $entry->value == 'productive')
-                        selected
-                    @endif
-                @endforeach
-            @endif
-        >✅ Productive</option>
-        <option value="moderate"
-            @if(isset($entries[$date['full_date']]))
-                @foreach($entries[$date['full_date']] as $entry)
-                    @if($entry->habit_id == $productivityHabit->id && $entry->value == 'moderate')
-                        selected
-                    @endif
-                @endforeach
-            @endif
-        >⚡ Moderately Productive</option>
-        <option value="unproductive"
-            @if(isset($entries[$date['full_date']]))
-                @foreach($entries[$date['full_date']] as $entry)
-                    @if($entry->habit_id == $productivityHabit->id && $entry->value == 'unproductive')
-                        selected
-                    @endif
-                @endforeach
-            @endif
-        >💤 Unproductive</option>
-    </select>
-</td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <select class="form-select rounded-md shadow-sm mt-1 block w-full" onchange="saveMood('mood',this.value, {{$moodHabit->id}},  '{{$date['full_date']}}')">
-                    <option value="">Select</option>
-                    <option value="positive"
-                    @if(isset($entries[$date['full_date']]))
-                @foreach($entries[$date['full_date']] as $entry)
-                    @if($entry->habit_id == $moodHabit->id && $entry->value == 'positive')
-                        selected
-                    @endif
-                @endforeach
-            @endif
-                    >😊 Positive</option>
-                    <option value="neutral"
-                    @if(isset($entries[$date['full_date']]))
-                @foreach($entries[$date['full_date']] as $entry)
-                    @if($entry->habit_id == $moodHabit->id && $entry->value == 'neutral')
-                        selected
-                    @endif
-                @endforeach
-            @endif
-                    >😐 Neutral</option>
-                    <option value="negative"
-                    @if(isset($entries[$date['full_date']]))
-                @foreach($entries[$date['full_date']] as $entry)
-                    @if($entry->habit_id == $moodHabit->id && $entry->value == 'negative')
-                        selected
-                    @endif
-                @endforeach
-            @endif
-                    >😢 Negative</option>
-                </select>
-            </td>
+                            @foreach ($dates as $date)
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {{ $date['formatted'] }}
+                                    </td>
 
-            <td class="px-6 py-4">
-                <input type="text"
-                    class="form-input rounded-md shadow-sm mt-1 block w-full"
-                    placeholder="Add note..."
-                    onchange="saveMood('note', this.value, {{$noteHabit->id}}, '{{$date['full_date']}}')"
-                    
-                     @if (isset($entries[$date['full_date']]))
-                        @foreach ($entries[$date['full_date']] as $entry)
-                        @if ($entry->habit_id == $noteHabit->id && $entry->note )
-                        value = "{{$entry['note']}}"
+                                    {{-- Regular Habits Checkboxes --}}
+                                    @foreach($habits as $habit)
+                                        @php
+                                            $habitMonthYear = $habit->month_year ? Carbon\Carbon::parse($habit->month_year)->format('Y-m') : null;
+                                            $targetMonthYear = $targetDate->format('Y-m');
+                                            $isDeleted = $habit->deleted_from && Carbon\Carbon::parse($habit->deleted_from)->lte($targetDate);
+                                        @endphp
 
-                        @endif
-                        @endforeach
-                     @endif
-                    >
-            </td>
-        </tr>
-    @endforeach
-</tbody>
+                                        @if (!in_array($habit->name, ['Mood', 'Productivity', 'Note']) && 
+                                            !$isDeleted &&
+                                            ($habitMonthYear === null || $habitMonthYear === $targetMonthYear))
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <input type="checkbox" 
+                                                    onchange="saveEntry('{{$habit->name}}', this, '{{$habit->id}}', '{{$date['full_date']}}')"
+                                                    class="form-checkbox h-5 w-5 text-blue-600"
+                                                    @if(isset($entries[$date['full_date']]))
+                                                        @foreach($entries[$date['full_date']] as $entry)
+                                                            @if($entry->habit_id == $habit->id && $entry->value == 1)
+                                                                checked
+                                                            @endif
+                                                        @endforeach
+                                                    @endif
+                                                >
+                                            </td>
+                                        @endif
+                                    @endforeach
 
+                                    {{-- Productivity Select --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <select class="form-select rounded-md shadow-sm mt-1 block w-full"
+                                                onchange="saveMood('productivity', this.value, {{$productivityHabit->id}}, '{{$date['full_date']}}')">
+                                            <option value="">Select</option>
+                                            @foreach(['productive' => '✅ Productive', 'moderate' => '⚡ Moderately Productive', 'unproductive' => '💤 Unproductive'] as $value => $label)
+                                                <option value="{{$value}}"
+                                                    @if(isset($entries[$date['full_date']]))
+                                                        @foreach($entries[$date['full_date']] as $entry)
+                                                            @if($entry->habit_id == $productivityHabit->id && $entry->value == $value)
+                                                                selected
+                                                            @endif
+                                                        @endforeach
+                                                    @endif
+                                                >{{$label}}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
 
+                                    {{-- Mood Select --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <select class="form-select rounded-md shadow-sm mt-1 block w-full"
+                                                onchange="saveMood('mood', this.value, {{$moodHabit->id}}, '{{$date['full_date']}}')">
+                                            <option value="">Select</option>
+                                            @foreach(['positive' => '😊 Positive', 'neutral' => '😐 Neutral', 'negative' => '😢 Negative'] as $value => $label)
+                                                <option value="{{$value}}"
+                                                    @if(isset($entries[$date['full_date']]))
+                                                        @foreach($entries[$date['full_date']] as $entry)
+                                                            @if($entry->habit_id == $moodHabit->id && $entry->value == $value)
+                                                                selected
+                                                            @endif
+                                                        @endforeach
+                                                    @endif
+                                                >{{$label}}</option>
+                                            @endforeach
+                                        </select>
+                                    </td>
+
+                                    {{-- Notes Input --}}
+                                    <td class="px-6 py-4">
+                                        <input type="text"
+                                            class="form-input rounded-md shadow-sm mt-1 block w-full"
+                                            placeholder="Add note..."
+                                            onchange="saveMood('note', this.value, {{$noteHabit->id}}, '{{$date['full_date']}}')"
+                                            @if(isset($entries[$date['full_date']]))
+                                                @foreach($entries[$date['full_date']] as $entry)
+                                                    @if($entry->habit_id == $noteHabit->id && $entry->note)
+                                                        value="{{$entry->note}}"
+                                                    @endif
+                                                @endforeach
+                                            @endif
+                                        >
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </div>
-    <!-- In your blade file, update the button: -->
-<button onclick="openHabitModal()" class="bg-red-500 hover:bg-blue-700 text-black font-bold py-2 px-4 rounded">
-    Add New Habit
-</button>
 
-<!-- Add this modal HTML at the bottom of your blade file -->
-<div id="habitModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    {{-- Add Habit Modal --}}
+    <div id="habitModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center">Add New Habit</h3>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 text-center">
+                Add New Habit for {{ $currentMonthDisplay }}
+            </h3>
             <form id="newHabitForm" class="mt-4" method="POST" action="{{ route('habits.store') }}">
                 @csrf
+                <input type="hidden" name="target_date" value="{{ $targetDate->format('Y-m-d') }}">
+                
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Habit Name</label>
                     <input type="text" name="name" required 
                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                 </div>
+                
                 <div class="mb-4">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Type</label>
                     <select name="type" required 
@@ -200,6 +204,7 @@
                         <option value="mood">Mood</option>
                     </select>
                 </div>
+
                 <div class="flex items-center justify-between mt-4">
                     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         Create Habit
@@ -212,6 +217,8 @@
         </div>
     </div>
 </div>
+
+
 
 <!-- Add this JavaScript -->
 <script>
@@ -247,6 +254,7 @@
             console.error('Error:', error)
         })
     }
+    
 
     function saveMood(name, value, habitId, date) {
             // console.log(date);
@@ -273,6 +281,34 @@
             console.error('Error:', error)
         })
          
+    }
+
+    function deleteHabit(habitId, habitName) {
+
+        console.log(habitId, habitName)
+        if(confirm(`Are you sure want to delete the habit "${habitName}" ?`)) {
+            fetch(`/habits/${habitId}`, {  
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+
+                    window.location.reload();
+                } else {
+                    alert('Failed to delete habit: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete habit');
+            });
+        }
     }
 </script>
 </x-app-layout>
