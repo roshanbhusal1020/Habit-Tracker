@@ -18,17 +18,28 @@ class HabitsTableController extends Controller
     public function show(Request $request)
     {
 
-        dump(auth()->id()); 
+        // dump(auth()->id()); 
 
         $targetDate = $request->date ? Carbon::parse($request->date) : now();
 
+        // dump($targetDate);
 
         $habits = Habit::where('user_id', auth()->id())
-        ->where(function($query) use ($targetDate) {
-            $query->whereNull('deleted_from')
-                  ->orWhere('deleted_from', '>', $targetDate->format('Y-m-d'));
-        })
-        ->get();        
+        ->get()
+        ->filter(function($habit) use ($targetDate) {
+            if ($habit->deleted_from && Carbon::parse($habit->deleted_from)->lte($targetDate)) {
+                return false;
+            }
+            
+            if (in_array($habit->name, ['Mood', 'Productivity', 'Note'])) {
+                return true;
+            }
+            
+            $habitMonth = $habit->month_year ? Carbon::parse($habit->month_year)->format('Y-m') : null;
+            $targetMonth = $targetDate->format('Y-m');
+            
+            return $habitMonth === null || $habitMonth === $targetMonth;
+        });    
         // Generate all dates for the current month
         // $currentDate = now()->startOfMonth();
         // $endOfMonth = now()->endOfMonth();
@@ -78,7 +89,7 @@ class HabitsTableController extends Controller
 
         // dump($entries);
         // dump($dates);
-        dump($habits);
+        // dump($habits);
         // dump($moodHabit);
         // dump($productivityHabit);
         
@@ -91,51 +102,60 @@ class HabitsTableController extends Controller
     
     // }
 
-    public function store(Request $request)
-    {
+// HabitsTableController.php
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|string'
-        ]);
-    
-        try {
-            // Check for existing habit including those marked as "deleted"
-            $existingHabit = Habit::where('user_id', auth()->id())
-                ->where('name', $request->name)
-                ->first();
-    
-            if ($existingHabit) {
-                if ($existingHabit->deleted_from) {
-                    // If the habit was previously "deleted", clear the deleted_from date
-                    $existingHabit->update([
-                        'deleted_from' => null,
-                        'type' => $request->type // Update type in case it changed
-                    ]);
-    
-                    return redirect()->route('habits.show')
-                        ->with('success', 'Habit restored successfully');
-                } else {
-                    return redirect()->route('habits.show')
-                        ->with('error', 'A habit with this name already exists');
-                }
+public function store(Request $request)
+{
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'type' => 'required|string',
+        'target_date' => 'required|date'  // Add this to receive the target month
+    ]);
+
+    try {
+        $targetDate = Carbon::parse($validated['target_date']);
+        $monthYear = $targetDate->startOfMonth();
+        
+        // Check for existing habit in the target month
+        $existingHabit = Habit::where('user_id', auth()->id())
+            ->where('name', $request->name)
+            ->where('month_year', $monthYear)
+            ->first();
+
+        if ($existingHabit) {
+            if ($existingHabit->deleted_from) {
+                $existingHabit->update([
+                    'deleted_from' => null,
+                    'type' => $request->type
+                ]);
+
+                return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
+                    ->with('success', 'Habit restored successfully');
             }
-    
 
-            $habit = new Habit;
-            $habit->user_id = auth()->id();
-            $habit->name = $request->name;
-            $habit->type = $request->type;
-            $habit->save();
-    
-            return redirect()->route('habits.show')
-                ->with('success', 'Habit created successfully');
-    
-        } catch (\Exception $e) {
-            return redirect()->route('habits.show')
-                ->with('error', 'Failed to create habit');
+            return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
+                ->with('error', 'A habit with this name already exists for this month');
         }
+
+        // Special habits (Mood, Productivity, Note) should be global (no month_year)
+        $isGlobalHabit = in_array($request->name, ['Mood', 'Productivity', 'Note']);
+
+        $habit = new Habit;
+        $habit->user_id = auth()->id();
+        $habit->name = $request->name;
+        $habit->type = $request->type;
+        $habit->month_year = $isGlobalHabit ? null : $monthYear;
+        $habit->save();
+
+        return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
+            ->with('success', 'Habit created successfully');
+
+    } catch (\Exception $e) {
+        return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
+            ->with('error', 'Failed to create habit');
     }
+}
+
 
     public function storeEntry(Request $request) 
     {
@@ -205,19 +225,22 @@ class HabitsTableController extends Controller
     public function destroy(Request $request, Habit $habit)
     {
         try {
+            
             if ($habit->user_id !== auth()->id()) {
                 return response()->json(['error' => 'Unauthorized'], 403);
             }
-    
-            DB::beginTransaction();
-            
 
-            $habit->update([
-                'deleted_from' => now()->startOfMonth()->format('Y-m-d')
-            ]);
-            
+            DB::beginTransaction();
+
+            // Only mark as deleted if it's not a global habit
+            if ($habit->month_year) {
+                $habit->update([
+                    'deleted_from' => now()->startOfMonth()->format('Y-m-d')
+                ]);
+            }
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Habit successfully deleted'

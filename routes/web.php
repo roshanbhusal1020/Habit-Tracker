@@ -61,11 +61,6 @@ Route::middleware('auth')->group(function () {
     Route::get('stats/todo', [StatsController::class, 'getTodoListStats'])->name('stats.todo');
     Route::get('stats/habit', [StatsController::class, 'getHabitTableStats'])->name('stats.habit');
 
-
-
-
-    
-
 });
 
 require __DIR__.'/auth.php';

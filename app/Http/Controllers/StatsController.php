@@ -103,6 +103,8 @@ class StatsController extends Controller
         // which dates tasks were completed + emotional/productivity state from the habit table
         // !!VERY IMPORTANT!!  
         
+        //streak
+
         $habits = Habit::where('user_id', auth()->id());
 
         return view('stats.habitChart.show', compact('habits'));
