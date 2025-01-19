@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TodoController;
+use Illuminate\Support\Facades\Auth;
+
 // use App\Http\Controllers\StatsController;
 
 
@@ -23,6 +25,10 @@ use App\Http\Controllers\TodoController;
 */
 
 Route::get('/', function () {
+
+    if (Auth::check()){
+        return redirect('/dashboard');
+    }
     return view('welcome');
 });
 // Route::get('/', [Habitstable::class, 'show']);
