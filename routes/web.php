@@ -55,6 +55,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/todos/{todo}/edit', [TodoController::class, 'edit'])->name('todos.edit');
     Route::patch('/todos/{todo}', [TodoController::class, 'update'])->name('todos.update');
+
+
+    Route::get('/journal', [JournalController::class, 'show'])->name('journal.show');
+    Route::post('/journal', [JournalController::class, 'store'])->name('journal.store');
+
     
     // Route::get('api/pomodoro/stats', [StatsController::class, 'getPomodoroStats'])->name('stats.getPomodoroStats');
     Route::get('stats/pomodoro', [StatsController::class, 'getPomodoroStats'])->name('stats.pomodoro');

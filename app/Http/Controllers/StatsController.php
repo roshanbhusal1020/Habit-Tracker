@@ -97,6 +97,9 @@ class StatsController extends Controller
     // public function showPomodoroStat() {
     //     return view('stats.show'); 
     // }
+    public function getJournalStats() {
+        //most talked theme
+    }
 
     public function getHabitTableStats() {
         // !!VERY IMPORTANT!!         
@@ -105,7 +108,9 @@ class StatsController extends Controller
         
         //streak
 
-        $habits = Habit::where('user_id', auth()->id());
+        
+
+        $habits = Habit::where('user_id', auth()->id())->get();
 
         return view('stats.habitChart.show', compact('habits'));
 
