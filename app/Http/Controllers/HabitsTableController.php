@@ -28,7 +28,7 @@ class HabitsTableController extends Controller
         ->get()
         ->filter(function($habit) use ($targetDate) {
             if ($habit->deleted_from && Carbon::parse($habit->deleted_from)->lte($targetDate)) {
-                return false;
+                return false; //excludes habits that are deleted
             }
             
             if (in_array($habit->name, ['Mood', 'Productivity', 'Note'])) {
@@ -38,7 +38,7 @@ class HabitsTableController extends Controller
             $habitMonth = $habit->month_year ? Carbon::parse($habit->month_year)->format('Y-m') : null;
             $targetMonth = $targetDate->format('Y-m');
             
-            return $habitMonth === null || $habitMonth === $targetMonth;
+            return $habitMonth === null || $habitMonth === $targetMonth; //basically habit is included if $habitMonth is null or is equal $targetDate
         });    
         // Generate all dates for the current month
         // $currentDate = now()->startOfMonth();
@@ -159,7 +159,7 @@ public function store(Request $request)
 
     public function storeEntry(Request $request) 
     {
-
+        
         $validated = $request->validate([
             'habit_id' => 'required|exists:habits,id',
             'date' => 'required|date',

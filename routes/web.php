@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Habitstable;
 use App\Http\Controllers\HabitsTableController;
+use App\Http\Controllers\HomepageController;
 use App\Http\Controllers\JournalController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -33,10 +34,6 @@ Route::get('/', function () {
 });
 // Route::get('/', [Habitstable::class, 'show']);
 
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -71,6 +68,12 @@ Route::middleware('auth')->group(function () {
     Route::get('stats/pomodoro', [StatsController::class, 'getPomodoroStats'])->name('stats.pomodoro');
     Route::get('stats/todo', [StatsController::class, 'getTodoListStats'])->name('stats.todo');
     Route::get('stats/habit', [StatsController::class, 'getHabitTableStats'])->name('stats.habit');
+
+    Route::get('/dashboard', [HomepageController::class, 'show'])->name('dashboard');
+
+
+
+    // Route::get('/dashboard', [HomepageController::class, 'show'])->name('homepage.show');
 
 });
 

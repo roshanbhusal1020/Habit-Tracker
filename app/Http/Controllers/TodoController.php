@@ -9,7 +9,7 @@ class TodoController extends Controller
 {
     public function index()
     {
-        $todos = auth()->user()->todos()
+        $todos = auth()->user()->todos() // uncompleted, earlier due dates abd wutg higher priotrity comes first
             ->orderBy('completed')
             ->orderBy('due_date')
             ->orderBy('priority', 'desc')
@@ -60,7 +60,8 @@ class TodoController extends Controller
     {
         $todo->update(['completed' => !$todo->complete]);
 
-        return redirect()->route('todo.index')->with('success', $todo);
+        // return redirect()->route('todo.index')->with('success', $todo);
+            return redirect()->back()->with('success', 'Todo updated successfully');
     }
 
     public function destroy(Todo $todo) 
