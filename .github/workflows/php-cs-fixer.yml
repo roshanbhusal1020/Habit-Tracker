@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Validate PHP Syntax
+      run: find . -type f -name "*.php" -exec php -l {} \;
+
     - name: Checkout code
       uses: actions/checkout@v3 # Fetch your repository code
 
@@ -25,6 +28,9 @@ jobs:
 
     - name: Run PHP CS Fixer
       run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+    - name: Validate PHP Syntax
+      run: find . -type f -name "*.php" -exec php -l {} \;
 
     - name: Commit fixed code
       if: ${{ github.event_name == 'push' }}
