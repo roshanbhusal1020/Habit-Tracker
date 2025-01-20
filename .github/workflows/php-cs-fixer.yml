@@ -1,0 +1,36 @@
+name: PHP CS Fixer
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - newbranch
+
+jobs:
+  php-cs-fixer:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3 # Fetch your repository code
+
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: 8.1 # Change this to your Laravel PHP version
+
+    - name: Install dependencies
+      run: composer install --no-scripts --no-progress
+
+    - name: Run PHP CS Fixer
+      run: vendor/bin/php-cs-fixer fix --dry-run --diff
+
+    - name: Commit fixed code
+      if: ${{ github.event_name == 'push' }}
+      run: |
+        git config user.name "2158394"
+        git config user.email "2158394@brunel.ac.uk"
+        git add .
+        git commit -m "Apply coding standards" || echo "No changes to commit"
+        git push
