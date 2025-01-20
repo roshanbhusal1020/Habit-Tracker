@@ -18,7 +18,7 @@ jobs:
     - name: Set up PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: 8.1 # Change this to your Laravel PHP version
+        php-version: 8.3 # Change this to your Laravel PHP version
 
     - name: Install dependencies
       run: composer install --no-scripts --no-progress
