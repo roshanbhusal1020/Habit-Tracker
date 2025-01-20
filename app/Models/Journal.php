@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Journal extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = ['content', 'user_id'];
 
     public function user()

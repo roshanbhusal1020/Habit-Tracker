@@ -14,7 +14,7 @@ class JournalController extends Controller
 
         $currentDate = $request->date ? Carbon::parse($request->date) : Carbon::today();
 
-       // Get today's entries
+        // Get today's entries
         $todayEntries = Journal::where('user_id', $userId)
             ->whereDate('created_at', $currentDate)
             ->orderBy('created_at', 'desc')
@@ -35,14 +35,14 @@ class JournalController extends Controller
         $datesWithEntries = Journal::where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->pluck('created_at')
-            ->map(function($date) {
+            ->map(function ($date) {
                 return $date->format('Y-m-d');
             })->toJson();
 
         return view('pages.journal.show', compact(
-            'todayEntries', 
-            'currentDate', 
-            'previousDate', 
+            'todayEntries',
+            'currentDate',
+            'previousDate',
             'nextDate',
             'datesWithEntries'
         ));

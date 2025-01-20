@@ -9,10 +9,11 @@ class HabitEntry extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id','habit_id', 'entry_date', 'value', 'note']; 
+    protected $fillable = ['user_id','habit_id', 'entry_date', 'value', 'note'];
 
 
-    public function habit() {
-        return $this->belongsTo(Habit::class); 
+    public function habit()
+    {
+        return $this->belongsTo(Habit::class);
     }
 }

@@ -5,15 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Habit;
 use App\Models\Pomodoro;
 use App\Models\Todo;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
-
-use function PHPSTORM_META\type;
 
 class StatsController extends Controller
 {
-    public function getPomodoroStats() 
+    public function getPomodoroStats()
     {
         // 1. Total Focus Hours
         $totalFocusHours = Pomodoro::where('user_id', auth()->id())
@@ -42,14 +38,14 @@ class StatsController extends Controller
         $totalSessions = Pomodoro::where('user_id', auth()->id())
             ->where('type', 'Focus Time')
             ->count();
-        
+
         $completedSessions = Pomodoro::where('user_id', auth()->id())
             ->where('type', 'Focus Time')
             ->where('completed', true)
             ->count();
 
-        $completionRate = $totalSessions > 0 
-            ? ($completedSessions / $totalSessions) * 100 
+        $completionRate = $totalSessions > 0
+            ? ($completedSessions / $totalSessions) * 100
             : 0;
 
         // 5. Task Types Distribution
@@ -71,18 +67,18 @@ class StatsController extends Controller
             ->groupBy('date')
             ->orderBy('date')
             ->get();
-            // dump($completionRate);
+        // dump($completionRate);
 
-            // dump($focusTimeByDay);
-            // dump($completedSessions);
-            // dump($totalSessions);
-            // dump($breakPatterns); // I could add here showing that how every after 3 short breaks is long break. 
-            // dump($productiveTimeSlots);
-            // dump($totalFocusHours);
+        // dump($focusTimeByDay);
+        // dump($completedSessions);
+        // dump($totalSessions);
+        // dump($breakPatterns); // I could add here showing that how every after 3 short breaks is long break.
+        // dump($productiveTimeSlots);
+        // dump($totalFocusHours);
 
-   // !!VERY IMPORTANT!!         
-   // which dates tasks were completed + emotional/productivity state from the habit table
-   // !!VERY IMPORTANT!!         
+        // !!VERY IMPORTANT!!
+        // which dates tasks were completed + emotional/productivity state from the habit table
+        // !!VERY IMPORTANT!!
 
 
         return view('stats.show', compact(
@@ -96,20 +92,22 @@ class StatsController extends Controller
     }
 
     // public function showPomodoroStat() {
-    //     return view('stats.show'); 
+    //     return view('stats.show');
     // }
-    public function getJournalStats() {
+    public function getJournalStats()
+    {
         //most talked theme
     }
 
-    public function getHabitTableStats() {
-        // !!VERY IMPORTANT!!         
+    public function getHabitTableStats()
+    {
+        // !!VERY IMPORTANT!!
         // which dates tasks were completed + emotional/productivity state from the habit table
-        // !!VERY IMPORTANT!!  
-        
+        // !!VERY IMPORTANT!!
+
         //streak
 
-        
+
 
         $habits = Habit::where('user_id', auth()->id())->get();
 
@@ -117,7 +115,8 @@ class StatsController extends Controller
 
     }
 
-    public function getTodoListStats() {
+    public function getTodoListStats()
+    {
         //completion rate- total completed; percentage of tasks completed
 
         // amount of priority lists (a break down of the list)
@@ -135,21 +134,21 @@ class StatsController extends Controller
         $todos = Todo::where('user_id', auth()->id());
 
         $allTodos = $todos->count();
-        $completedTodos = $todos->clone()->where('completed', true)->count(); 
+        $completedTodos = $todos->clone()->where('completed', true)->count();
         $completionRate = $allTodos > 0 ? ($completedTodos / $allTodos) * 100 : 0;
 
 
-        // priority distribution 
+        // priority distribution
 
         $priorityDistribution = $todos->clone()
                                 ->select('priority', DB::raw('COUNT(*) as count'))
                                 ->groupBy('priority')
                                 ->get()
-                                ->mapWithKeys(function($item){
+                                ->mapWithKeys(function ($item) {
                                     $priority = match($item->priority) { // this is a really useful function, I could reuse it later.
                                         0 => 'Low',
                                         1 => 'Medium',
-                                        2 => 'High', 
+                                        2 => 'High',
                                         default => 'Unknown'
                                     };
                                     return [$priority => $item->count];
@@ -161,20 +160,20 @@ class StatsController extends Controller
             'onTime' => $todos->clone()
                 ->where('completed', true)
                 ->whereNotNull('due_date')
-                ->whereColumn('updated_at', '<=', 'due_date') 
-                ->count(), 
+                ->whereColumn('updated_at', '<=', 'due_date')
+                ->count(),
             'Late' => $todos->clone()
                 ->where('completed', true)
                 ->whereNotNull('due_date')
                 ->whereColumn('updated_at', '>', 'due_date')
-                ->count(), 
+                ->count(),
             'Overdue' => $todos->clone()
                 ->where('completed', false)
                 ->whereNotNull('due_date')
                 ->where('updated_at', '<', now())
                 ->count()
 
-            
+
         ];
 
         $completionTimeline = $todos->clone()
@@ -191,52 +190,54 @@ class StatsController extends Controller
                 ->orderBy('due_date')
                 ->take(5)
                 ->get();
-        dump($completionRate, $priorityDistribution, $punchualityStats, $upcomingDeadlines, $completionTimeline );
+        dump($completionRate, $priorityDistribution, $punchualityStats, $upcomingDeadlines, $completionTimeline);
 
-        return view('stats.todoChart.show', compact('completionRate',
-                                                    'priorityDistribution',
-                                                    'punchualityStats',
-                                                    'completionTimeline', 
-                                                    'upcomingDeadlines'
-                                                ));
-      
+        return view('stats.todoChart.show', compact(
+            'completionRate',
+            'priorityDistribution',
+            'punchualityStats',
+            'completionTimeline',
+            'upcomingDeadlines'
+        ));
+
     }
 
-    public function overallAnalysis () {
-        $userId = auth()->id();  
+    public function overallAnalysis()
+    {
+        $userId = auth()->id();
         $moodHabitId = DB::table('habits')
         ->where('name', 'Mood')
         ->value('id');
-    
- 
-    
-    $userId = auth()->id();
-    $startOfMonth =  now()->startOfMonth()->subMonth();
-    $endOfMonth =  now()->startOfMonth()->subDay();
-    
-    $data = DB::table('habit_entries as he1')
-        ->join('habits as h1', 'he1.habit_id', '=', 'h1.id')
-        ->join('habit_entries as he2', function ($join) use ($userId, $moodHabitId) {
-            $join->on('he1.entry_date', '=', 'he2.entry_date')
-                ->where('he2.user_id', '=', $userId)
-                ->where('he2.habit_id', '=', $moodHabitId);
-        })
-        ->select(
-            DB::raw('SUM(CASE WHEN he1.value = "yes" THEN 1 ELSE 0 END) as total_habits_completed'),  
-            'he2.value as mood', // Mood rating
-            'he1.entry_date'
-        )
-        ->where('he1.user_id', $userId)
-        ->whereBetween('he1.entry_date', [$startOfMonth, $endOfMonth]) 
-        ->groupBy('he1.entry_date', 'he2.value')
-        ->get();
-    
 
-        
+
+
+        $userId = auth()->id();
+        $startOfMonth =  now()->startOfMonth()->subMonth();
+        $endOfMonth =  now()->startOfMonth()->subDay();
+
+        $data = DB::table('habit_entries as he1')
+            ->join('habits as h1', 'he1.habit_id', '=', 'h1.id')
+            ->join('habit_entries as he2', function ($join) use ($userId, $moodHabitId) {
+                $join->on('he1.entry_date', '=', 'he2.entry_date')
+                    ->where('he2.user_id', '=', $userId)
+                    ->where('he2.habit_id', '=', $moodHabitId);
+            })
+            ->select(
+                DB::raw('SUM(CASE WHEN he1.value = "yes" THEN 1 ELSE 0 END) as total_habits_completed'),
+                'he2.value as mood', // Mood rating
+                'he1.entry_date'
+            )
+            ->where('he1.user_id', $userId)
+            ->whereBetween('he1.entry_date', [$startOfMonth, $endOfMonth])
+            ->groupBy('he1.entry_date', 'he2.value')
+            ->get();
+
+
+
 
 
         return view('stats.dashboard', compact('data'));
 
-        }
+    }
 
 }

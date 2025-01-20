@@ -27,7 +27,7 @@ use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
 
-    if (Auth::check()){
+    if (Auth::check()) {
         return redirect('/dashboard');
     }
     return view('welcome');
@@ -44,7 +44,7 @@ Route::middleware('auth')->group(function () {
     // Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
     Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
     Route::delete('/habits/{habit}', [HabitsTableController::class, 'destroy'])->name('habits.destroy');
-    
+
 
     Route::get('/pomodoro', [PomodoroController::class, 'show'])->name('pomodoro.show');
 
@@ -63,7 +63,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/journal', [JournalController::class, 'show'])->name('journal.show');
     Route::post('/journal', [JournalController::class, 'store'])->name('journal.store');
 
-    
+
     // Route::get('api/pomodoro/stats', [StatsController::class, 'getPomodoroStats'])->name('stats.getPomodoroStats');
     Route::get('stats/pomodoro', [StatsController::class, 'getPomodoroStats'])->name('stats.pomodoro');
     Route::get('stats/todo', [StatsController::class, 'getTodoListStats'])->name('stats.todo');

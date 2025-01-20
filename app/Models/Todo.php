@@ -21,4 +21,3 @@ class Todo extends Model
     }
 
 }
-

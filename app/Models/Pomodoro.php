@@ -10,6 +10,6 @@ class Pomodoro extends Model
     use HasFactory;
     protected $table = 'pomodoro_sessions';
 
-    protected $fillable = ['user_id','task_name', 'type', 'duration_minutes', 'started_at', 'completed_at', 'completed']; 
+    protected $fillable = ['user_id','task_name', 'type', 'duration_minutes', 'started_at', 'completed_at', 'completed'];
 
 }

@@ -10,24 +10,26 @@ class Habit extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'type', 'deleted_from', 'month_year']; 
+    protected $fillable = ['name', 'type', 'deleted_from', 'month_year'];
     protected $casts = [
         'deleted_from' => 'datetime',
         'month_year' => 'datetime'
     ];
-    public function entries() {
+    public function entries()
+    {
         return $this->hasMany(HabitEntry::class);
     }
 
-    public function user() {
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
-        // Scope to get habits for a specific month
-        public function scopeForMonth($query, $date)
-        {
-            return $query->where(function($q) use ($date) {
-                $q->whereNull('month_year')  // Get global habits (like Mood, Productivity)
-                  ->orWhere('month_year', Carbon::parse($date)->startOfMonth());
-            });
-        }
+    // Scope to get habits for a specific month
+    public function scopeForMonth($query, $date)
+    {
+        return $query->where(function ($q) use ($date) {
+            $q->whereNull('month_year')  // Get global habits (like Mood, Productivity)
+              ->orWhere('month_year', Carbon::parse($date)->startOfMonth());
+        });
+    }
 }
