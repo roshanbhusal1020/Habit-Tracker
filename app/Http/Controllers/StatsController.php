@@ -7,6 +7,7 @@ use App\Models\Pomodoro;
 use App\Models\Todo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 use function PHPSTORM_META\type;
 
@@ -200,4 +201,42 @@ class StatsController extends Controller
                                                 ));
       
     }
+
+    public function overallAnalysis () {
+        $userId = auth()->id();  
+        $moodHabitId = DB::table('habits')
+        ->where('name', 'Mood')
+        ->value('id');
+    
+ 
+    
+    $userId = auth()->id();
+    $startOfMonth =  now()->startOfMonth()->subMonth();
+    $endOfMonth =  now()->startOfMonth()->subDay();
+    
+    $data = DB::table('habit_entries as he1')
+        ->join('habits as h1', 'he1.habit_id', '=', 'h1.id')
+        ->join('habit_entries as he2', function ($join) use ($userId, $moodHabitId) {
+            $join->on('he1.entry_date', '=', 'he2.entry_date')
+                ->where('he2.user_id', '=', $userId)
+                ->where('he2.habit_id', '=', $moodHabitId);
+        })
+        ->select(
+            DB::raw('SUM(CASE WHEN he1.value = "yes" THEN 1 ELSE 0 END) as total_habits_completed'),  
+            'he2.value as mood', // Mood rating
+            'he1.entry_date'
+        )
+        ->where('he1.user_id', $userId)
+        ->whereBetween('he1.entry_date', [$startOfMonth, $endOfMonth]) 
+        ->groupBy('he1.entry_date', 'he2.value')
+        ->get();
+    
+
+        
+
+
+        return view('stats.dashboard', compact('data'));
+
+        }
+
 }

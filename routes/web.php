@@ -71,6 +71,8 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/dashboard', [HomepageController::class, 'show'])->name('dashboard');
 
+    Route::get('/testing', [StatsController::class, 'overallAnalysis'])->name('testing');
+
 
 
     // Route::get('/dashboard', [HomepageController::class, 'show'])->name('homepage.show');
