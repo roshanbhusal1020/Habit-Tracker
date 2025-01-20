@@ -256,7 +256,7 @@
     }
     
 
-    function saveMood(name, value, habitId, date) {
+    function saveMood(name, value, habitId, date) { // I need to give better name as all mood, productivity and note use this
             // console.log(date);
             console.log('name: '+ name + " value: " + value + ' habitId: ' + habitId + ' date: ' + date);
             fetch('/habits/entries/store', {

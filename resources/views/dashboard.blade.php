@@ -13,6 +13,69 @@
 
 
         <h1>HOW WAS YOUR DAY ?? PRODUCTUVUTY , MOOD, SHORT NOTE</h1>
+
+        <!-- Mood and Productivity Section -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <!-- Productivity -->
+    <div class="bg-white rounded-lg p-4 shadow">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Today's Productivity</label>
+        <select 
+            class="form-select rounded-md shadow-sm mt-1 block w-full"
+            onchange="saveMood('productivity', this.value, {{$productivityHabit->id}}, '{{ now()->format('Y-m-d') }}')">
+            <option value="">Select</option>
+            @foreach(['productive' => '✅ Productive', 'moderate' => '⚡ Moderately Productive', 'unproductive' => '💤 Unproductive'] as $value => $label)
+                <option value="{{$value}}"
+                    @if(isset($entries[now()->format('Y-m-d')]))
+                        @foreach($entries[now()->format('Y-m-d')] as $entry)
+                            @if($entry->habit_id == $productivityHabit->id && $entry->value == $value)
+                                selected
+                            @endif
+                        @endforeach
+                    @endif
+                >{{$label}}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <!-- Mood -->
+    <div class="bg-white rounded-lg p-4 shadow">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Today's Mood</label>
+        <select 
+            class="form-select rounded-md shadow-sm mt-1 block w-full"
+            onchange="saveMood('mood', this.value, {{$moodHabit->id}}, '{{ now()->format('Y-m-d') }}')">
+            <option value="">Select</option>
+            @foreach(['positive' => '😊 Positive', 'neutral' => '😐 Neutral', 'negative' => '😢 Negative'] as $value => $label)
+                <option value="{{$value}}"
+                    @if(isset($entries[now()->format('Y-m-d')]))
+                        @foreach($entries[now()->format('Y-m-d')] as $entry)
+                            @if($entry->habit_id == $moodHabit->id && $entry->value == $value)
+                                selected
+                            @endif
+                        @endforeach
+                    @endif
+                >{{$label}}</option>
+            @endforeach
+        </select>
+    </div>
+
+    <!-- Notes -->
+    <div class="bg-white rounded-lg p-4 shadow">
+        <label class="block text-sm font-medium text-gray-700 mb-2">Today's Note</label>
+        <input 
+            type="text"
+            class="form-input rounded-md shadow-sm mt-1 block w-full"
+            placeholder="Add note..."
+            onchange="saveMood('note', this.value, {{$noteHabit->id}}, '{{ now()->format('Y-m-d') }}')"
+            @if(isset($entries[now()->format('Y-m-d')]))
+                @foreach($entries[now()->format('Y-m-d')] as $entry)
+                    @if($entry->habit_id == $noteHabit->id && $entry->note)
+                        value="{{$entry->note}}"
+                    @endif
+                @endforeach
+            @endif
+        >
+    </div>
+</div>
         <!-- Quick Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Focus Timer Card -->
@@ -43,15 +106,33 @@
                 {{ $todosNumber }} remaining today
                 </p>
             </a>
+        @php
+    
+            $regularHabits = $habits->filter(function($habit) use ($noteHabit, $productivityHabit, $moodHabit){
+                return !in_array($habit->id, [$noteHabit->id, $productivityHabit->id, $moodHabit->id]);
+            }); 
+    
+            $totalHabits = $regularHabits->count(); 
 
+            $completedHabits = 0;
+
+
+            if(isset($entries[now()->format('Y-m-d')])) {
+                $completedHabits = $entries[now()->format('Y-m-d')]
+                    ->filter(function($entry) use ($noteHabit, $productivityHabit, $moodHabit) {
+                        return !in_array($entry->habit_id, [$noteHabit->id, $productivityHabit->id, $moodHabit->id])
+                            && $entry->value == 1;
+                    })->count();
+             }
+
+    
+            @endphp
             <!-- Habits Card -->
             <a href="{{route('habits.show')}}" class="bg-emerald-600 rounded-xl p-6 text-white shadow-lg">
                 <i data-lucide="activity" class="w-8 h-8 mb-3"></i>
                 <h3 class="text-lg font-semibold">Habits</h3>
-                <p class="opacity-90">
+                <p class="opacity-90">{{ $completedHabits }}/{{ $totalHabits }} completed</p>
 
-                3/6 completed
-                </p>
             </a>
 
             <!-- Journal Card -->
@@ -74,6 +155,8 @@
                     </div>
                     <div class="space-y-3">
 @dump($todos)
+@dump($entries)
+
 
 
 @foreach($todos as $todo)
@@ -198,28 +281,55 @@
     <script>
     function saveEntry(name, input, habitId, date) {
 
-console.log('Trying to send', {name, input, habitId, date})
-fetch('/habits/entries/store', {
-    method: 'POST', 
-    headers:  {
-    'Content-Type': 'application/json',
-    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-},
-credentials: 'same-origin',
-body: JSON.stringify({
-    name: name,
-    habit_id: habitId, 
-    date:date, 
-    value: input.checked ? 1:0
-})
-})
-.then (response=>response.json())
-.then(data=> {
-    console.log('Success:', data)
-})
-.catch(error => {
-    console.error('Error:', error)
-})
-}
+        console.log('Trying to send', {name, input, habitId, date})
+        fetch('/habits/entries/store', {
+            method: 'POST', 
+            headers:  {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            name: name,
+            habit_id: habitId, 
+            date:date, 
+            value: input.checked ? 1:0
+        })
+        })
+        .then (response=>response.json())
+        .then(data=> {
+            console.log('Success:', data)
+        })
+        .catch(error => {
+            console.error('Error:', error)
+        })
+        }
+
+        function saveMood(name, value, habitId, date) {
+            // console.log(date);
+            console.log('name: '+ name + " value: " + value + ' habitId: ' + habitId + ' date: ' + date);
+            fetch('/habits/entries/store', {
+            method: 'POST', 
+            headers:  {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            name: name,
+            habit_id: habitId, 
+            date:date, 
+            value: value
+        })
+        })
+        .then (response=>response.json())
+        .then(data=> {
+            console.log('Success:', data)
+        })
+        .catch(error => {
+            console.error('Error:', error)
+        })
+         
+    }
     </script>
                         </x-app-layout>
