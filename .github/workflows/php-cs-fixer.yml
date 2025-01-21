@@ -30,7 +30,7 @@ jobs:
       run: vendor/bin/php-cs-fixer fix --dry-run --diff
 
     - name: Validate PHP Syntax
-      run: find . -type f -name "*.php" -exec php -l {} \;
+      run: find . -type f -name "*.php" ! -path "./vendor/*" -exec php -l {} \;
 
     - name: Commit fixed code
       if: ${{ github.event_name == 'push' }}
