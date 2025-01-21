@@ -39,7 +39,7 @@ jobs:
         git config user.email "2158394@brunel.ac.uk"
         git add .
         git commit -m "Apply coding standards" || echo "No changes to commit"
-        git push https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
+        git push https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref }}
 
 
 
