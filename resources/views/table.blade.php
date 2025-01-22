@@ -10,7 +10,7 @@
 <table>
     <ul>
         @for ($i=0; $i <$daysInMonth; $i++)
-            <li> {{$i}}</li>
+            <li> {{$i}} .</li>
             <input type="checkbox">
         @endfor
         <td> {{$daysInMonth}}   </td>
