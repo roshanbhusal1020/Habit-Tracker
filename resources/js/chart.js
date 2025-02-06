@@ -132,3 +132,57 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 });
+
+
+// In chart.js
+function createMoodHabitsChart(elementId) {
+    const ctx = document.getElementById(elementId);
+    if (!ctx) return;
+    
+    const rawData = JSON.parse(ctx.dataset.stats);
+    const moodStats = {1: {total: 0, count: 0}, 
+                      2: {total: 0, count: 0}, 
+                      3: {total: 0, count: 0}};
+    
+    rawData.forEach(day => {
+        const moodRating = day.mood_rating;
+        const habitKeys = Object.keys(day).filter(key => key.startsWith('habit_'));
+        const completedHabits = habitKeys.reduce((sum, key) => sum + day[key], 0);
+        
+        moodStats[moodRating].total += completedHabits;
+        moodStats[moodRating].count += 1;
+    });
+    
+    const chartData = Object.entries(moodStats).map(([rating, stats]) => ({
+        mood_rating: parseInt(rating),
+        avg_habits: (stats.total / stats.count).toFixed(2)
+    })).sort((a, b) => a.mood_rating - b.mood_rating);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Negative', 'Neutral', 'Positive'],
+            datasets: [{
+                label: 'Average Habits Completed',
+                data: chartData.map(item => item.avg_habits),
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: { y: { beginAtZero: true, max: 5 } }
+        }
+    });
+}
+
+// Initialize charts
+document.addEventListener('DOMContentLoaded', function() {
+    const moodHabitsChart = document.getElementById('moodHabitsChart');
+    if (moodHabitsChart) {
+        createMoodHabitsChart('moodHabitsChart');
+    }
+});

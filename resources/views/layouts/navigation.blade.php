@@ -53,11 +53,23 @@
             </div>
 
 
-            <div class="relative inline-block">
-                <i class="fas fa-bell text-gray-600 hover:text-gray-800 cursor-pointer"></i>
-
-                <div class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                    3
+            <div class="notification-container">
+                <div id="notificationBell" class="notification-bell">
+                    <i id = "notificationIcon"class="fa fa-bell"></i>
+                    <span id="notificationBadge" class="notification-badge"></span>
+                </div>
+                <div id="notificationDropdown" class="notification-dropdown">
+                    <div class="notification-header">
+                        <h2>Notifications</h2>
+                        <button id="muteButton" class="mute-button" title="Mute notifications">
+                            <i class="fa fa-bell"></i>
+                        </button>
+                    </div>
+                    <button id="markAllRead" class="mark-all-read">Mark all as read</button>
+                    <div class="notification-list">
+                        <div id="loadingSpinner" class="loading-spinner"></div>
+                        <div id="notificationsContainer"></div>
+                    </div>
                 </div>
             </div>
 
@@ -107,3 +119,126 @@
         </div>
     </div>
 </nav>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const notificationBell = document.getElementById("notificationBell");
+    const notificationDropdown = document.getElementById("notificationDropdown");
+    const notificationsContainer = document.getElementById("notificationsContainer");
+    const loadingSpinner = document.getElementById("loadingSpinner");
+    const notificationBadge = document.getElementById("notificationBadge");
+
+    let notificationIds = [];
+    let pageNumber = 0; 
+    
+    let isDropdownOpen = false;
+    fetchNotifications();
+
+    // Toggle dropdown visibility
+    notificationBell.addEventListener("click", function () {
+        isDropdownOpen = !isDropdownOpen;
+        notificationDropdown.style.display = isDropdownOpen ? "block" : "none";
+    });
+
+    function fetchNotifications() {
+        notificationsContainer.innerHTML = "";
+        loadingSpinner.style.display = "block"; // this basically mnakes it visisble, this is loading spinner. but not sure if I neeed to improt it from somewhere. 
+
+        fetch("/notification")
+            .then((response) => response.json())
+            .then((data) => {
+                loadingSpinner.style.display = "none";// this makes the spinner disappear as the data has already loaded
+                if (data.data.length === 0) {
+                    notificationsContainer.innerHTML = "<p>No notifications.</p>";
+                } else {
+                    let unreadNotifications = 0; 
+                    data.data.forEach((notification) => {
+                        notificationIds.push(notification.id)
+                        if(notification.read ===0 ){
+                            unreadNotifications ++
+                        }
+
+                        const notificationItem = document.createElement("div");
+                        notificationItem.classList.add("notification-item");
+                        notificationItem.innerHTML = `
+                        <a href = "${notification.url}">
+                        <p>${notification.id} </p>
+
+                            <p>${notification.content}</p>
+                        
+                        </a>
+                        `;
+                        notificationsContainer.appendChild(notificationItem);
+                    });
+                // Update notification badge
+                if (unreadNotifications > 0) {
+                    notificationBadge.innerHTML = unreadNotifications;
+                    notificationBadge.style.display = "inline-block"; // Show badge
+                } else {
+                    notificationBadge.style.display = "none"; // Hide badge if 0
+                }
+                }
+            })
+            .catch((error) => {
+                loadingSpinner.style.display = "none";
+                console.error("Error fetching notifications:", error);
+                notificationsContainer.innerHTML = "<p>Error loading notifications.</p>";
+            });
+    }
+
+    notificationDropdown.addEventListener("scroll", function () {
+//scroll height = total height of a notification container
+// scroll top = how much have I scrolled down
+// client height = how much can be seen atm
+        if (notificationDropdown.scrollHeight - notificationDropdown.scrollTop <= notificationDropdown.clientHeight) {
+            console.log("User scrolled to the bottom!");
+            pageNumber ++
+
+            getNewNotifications()
+
+            // You can trigger a function here, e.g., load more notifications
+        }
+    });
+
+    function getNewNotifications() {
+    fetch("/notification?page=" + pageNumber)
+        .then(response => response.json())
+        .then(data => {
+            loadingSpinner.style.display = "none";
+            data.data.forEach(notification => {
+                if (!notificationIds.includes(notification.id)) {
+                    console.log(notification)
+                const notificationItem = document.createElement("div");
+                notificationItem.classList.add("notification-item");
+                notificationItem.innerHTML = `
+                    <a href="${notification.url}">
+                        <p>${notification.id} </p>
+                        <p>${notification.content}</p>
+                    </a>
+                `;
+                notificationIds.push(notification.id)
+                notificationsContainer.appendChild(notificationItem);
+                }
+
+               
+            });
+        })
+        .catch(error => {
+            loadingSpinner.style.display = "none";
+            console.error("Error fetching notifications:", error);
+            notificationsContainer.innerHTML = "<p>Error loading notifications.</p>";
+        });
+}
+document.addEventListener('click', function(event) {
+        if (!notificationBell.contains(event.target) && !notificationDropdown.contains(event.target)) {
+            notificationDropdown.style.display = 'none';
+            isDropdownOpen = false;
+        }
+    });
+
+    function markSingleRead() {
+        
+    }
+});
+
+</script>

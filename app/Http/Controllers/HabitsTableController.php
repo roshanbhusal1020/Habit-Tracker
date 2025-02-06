@@ -7,6 +7,8 @@ use App\Models\HabitEntry;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\UserNotificationController;
+
 
 class HabitsTableController extends Controller
 {
@@ -82,22 +84,13 @@ class HabitsTableController extends Controller
         $currentMonthDisplay = $targetDate->format('F Y');
 
 
-        // dump($entries);
-        // dump($dates);
-        // dump($habits);
-        // dump($moodHabit);
-        // dump($productivityHabit);
+        $userNotification = new UserNotificationController(); 
+        $userNotification->create('2', 'test', 'hello I am just testing', 'localhost/tesitng', 0, 'idk');
 
 
         return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'noteHabit', 'previousMonth', 'nextMonth', 'currentMonthDisplay', 'targetDate'));
     }
 
-    // public function edit ($id)
-    // {
-
-    // }
-
-    // HabitsTableController.php
 
     public function store(Request $request)
     {

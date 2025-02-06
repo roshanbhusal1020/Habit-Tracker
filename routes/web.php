@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TodoController;
+use App\Http\Controllers\UserNotificationController;
+use App\Models\UserNotification;
 use Illuminate\Support\Facades\Auth;
 
 // use App\Http\Controllers\StatsController;
@@ -72,6 +74,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [HomepageController::class, 'show'])->name('dashboard');
 
     Route::get('/testing', [StatsController::class, 'overallAnalysis'])->name('testing');
+
+    Route::get('/notification', [UserNotificationController::class, 'show'])->name('notification.show');
 
 
 
