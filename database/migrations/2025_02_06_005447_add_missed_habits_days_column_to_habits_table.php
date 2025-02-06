@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('=habits', function (Blueprint $table) {
-            //
+        Schema::table('habits', function (Blueprint $table) {
+            $table->integer('missed_threshold')->nullable();
+
         });
     }
 
@@ -21,8 +22,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('=habits', function (Blueprint $table) {
-            //
+        Schema::table('habits', function (Blueprint $table) {
+            $table->dropColumn('missed_threshold');
         });
     }
 };
