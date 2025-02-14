@@ -15,5 +15,8 @@ class CheckMissedHabits extends Command
 
     public function handle() {
         $user= Habit::distinct()->pluck('user_id');
+
+
+        
     }
 }

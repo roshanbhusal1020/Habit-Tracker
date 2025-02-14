@@ -86,9 +86,3 @@
     margin: 0;
 }
 
-/* Loading spinner */
-.loading-spinner {
-    display: none;
-    margin: 10px auto;
-    text-align: center;
-}

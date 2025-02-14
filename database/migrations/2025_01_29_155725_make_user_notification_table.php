@@ -11,17 +11,17 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('user_notifications', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('user_id');
-            $table->string('type');  
-            $table->text('content');
-            $table->string('url')->nullable();
-            $table->boolean('read')->default(false);
-            $table->json('data')->nullable(); 
-            $table->timestamps();
+        // Schema::create('user_notifications', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->unsignedBigInteger('user_id');
+        //     $table->string('type');  
+        //     $table->text('content');
+        //     $table->string('url')->nullable();
+        //     $table->boolean('read')->default(false);
+        //     $table->json('data')->nullable(); 
+        //     $table->timestamps();
             
-            });  
+        //     });  
     }
 
     /**

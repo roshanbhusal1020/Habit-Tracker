@@ -21,20 +21,20 @@ class UserNotificationController extends Controller
         return response()->json($paginator);
     }
 
-    public function create ($user_id, $type, $content, $url, $read, $data) {
+    // public function create ($user_id, $type, $content, $url, $read, $data) {
 
-        if(auth()->user()) {
-             $CreateUserNotification = UserNotification::create([
-                                                                'user_id'=>$user_id,
-                                                                'type' => $type,
-                                                                'content'=>$content,
-                                                                'url' => $url,
-                                                                'read'=>$read, 
+    //     if(auth()->user()) {
+    //          $CreateUserNotification = UserNotification::create([
+    //                                                             'user_id'=>$user_id,
+    //                                                             'type' => $type,
+    //                                                             'content'=>$content,
+    //                                                             'url' => $url,
+    //                                                             'read'=>$read, 
 
-                                                            ]);
-        }
+    //                                                         ]);
+    //     }
 
-    }
+    // }
 
     public function markAllNotificationRead(){
 

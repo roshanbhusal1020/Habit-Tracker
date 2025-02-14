@@ -67,7 +67,8 @@
                     </div>
                     <button id="markAllRead" class="mark-all-read">Mark all as read</button>
                     <div class="notification-list">
-                        <div id="loadingSpinner" class="loading-spinner"></div>
+                        <div id="loadingSpinner" class="loading-spinner"></div> 
+                        <!-- I dont need spinner, I should just remove this -->
                         <div id="notificationsContainer"></div>
                     </div>
                 </div>
@@ -141,50 +142,48 @@
     });
 
     function fetchNotifications() {
-        notificationsContainer.innerHTML = "";
-        loadingSpinner.style.display = "block"; // this basically mnakes it visisble, this is loading spinner. but not sure if I neeed to improt it from somewhere. 
+    notificationsContainer.innerHTML = "";
+    loadingSpinner.style.display = "block";
 
-        fetch("/notification")
-            .then((response) => response.json())
-            .then((data) => {
-                loadingSpinner.style.display = "none";// this makes the spinner disappear as the data has already loaded
-                if (data.data.length === 0) {
-                    notificationsContainer.innerHTML = "<p>No notifications.</p>";
-                } else {
-                    let unreadNotifications = 0; 
-                    data.data.forEach((notification) => {
-                        notificationIds.push(notification.id)
-                        if(notification.read ===0 ){
-                            unreadNotifications ++
-                        }
+    fetch("/notification")  // Changed from /notification to /notifications
+        .then((response) => response.json())
+        .then((data) => {
+            loadingSpinner.style.display = "none";
+            if (data.data.length === 0) {
+                notificationsContainer.innerHTML = "<p>No notifications.</p>";
+            } else {
+                let unreadNotifications = 0; 
+                data.data.forEach((notification) => {
+                    notificationIds.push(notification.id)
+                    if(!notification.read){
+                        unreadNotifications++;
+                    }
 
-                        const notificationItem = document.createElement("div");
-                        notificationItem.classList.add("notification-item");
-                        notificationItem.innerHTML = `
-                        <a href = "${notification.url}">
-                        <p>${notification.id} </p>
+                    const notificationItem = document.createElement("div");
+                    notificationItem.classList.add("notification-item");
+                    notificationItem.innerHTML = `
+                    <a href="${notification.url}">
+                        <p>${notification.message}</p> <!-- Changed from content to message -->
+                        <p class="text-sm text-gray-500">${notification.created_at}</p>
+                    </a>
+                    `;
+                    notificationsContainer.appendChild(notificationItem);
+                });
 
-                            <p>${notification.content}</p>
-                        
-                        </a>
-                        `;
-                        notificationsContainer.appendChild(notificationItem);
-                    });
-                // Update notification badge
                 if (unreadNotifications > 0) {
                     notificationBadge.innerHTML = unreadNotifications;
-                    notificationBadge.style.display = "inline-block"; // Show badge
+                    notificationBadge.style.display = "inline-block";
                 } else {
-                    notificationBadge.style.display = "none"; // Hide badge if 0
+                    notificationBadge.style.display = "none";
                 }
-                }
-            })
-            .catch((error) => {
-                loadingSpinner.style.display = "none";
-                console.error("Error fetching notifications:", error);
-                notificationsContainer.innerHTML = "<p>Error loading notifications.</p>";
-            });
-    }
+            }
+        })
+        .catch((error) => {
+            loadingSpinner.style.display = "none";
+            console.error("Error fetching notifications:", error);
+            notificationsContainer.innerHTML = "<p>Error loading notifications.</p>";
+        });
+}
 
     notificationDropdown.addEventListener("scroll", function () {
 //scroll height = total height of a notification container

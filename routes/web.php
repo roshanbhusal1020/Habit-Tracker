@@ -10,6 +10,9 @@ use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TodoController;
 use App\Http\Controllers\UserNotificationController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ChartController;
+u
 use App\Models\UserNotification;
 use Illuminate\Support\Facades\Auth;
 
@@ -47,6 +50,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
     Route::delete('/habits/{habit}', [HabitsTableController::class, 'destroy'])->name('habits.destroy');
 
+    
 
     Route::get('/pomodoro', [PomodoroController::class, 'show'])->name('pomodoro.show');
 
@@ -75,9 +79,13 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/testing', [StatsController::class, 'overallAnalysis'])->name('testing');
 
-    Route::get('/notification', [UserNotificationController::class, 'show'])->name('notification.show');
+    // Route::get('/notification', [UserNotificationController::class, 'show'])->name('notification.show');
+    Route::get('/notification', [NotificationController::class, 'index']);
 
-
+    Route::get('/mood-vs-habits', [ChartController::class, 'moodVsHabits']);
+    Route::get('/mood-vs-journal', [ChartController::class, 'moodVsJournal']);
+    Route::get('/pomodoro-vs-productivity', [ChartController::class, 'pomodoroVsProductivity']);
+    Route::get('/journal-vs-productivity', [ChartController::class, 'journalVsProductivity']);
 
     // Route::get('/dashboard', [HomepageController::class, 'show'])->name('homepage.show');
 

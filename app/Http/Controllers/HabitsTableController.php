@@ -84,8 +84,8 @@ class HabitsTableController extends Controller
         $currentMonthDisplay = $targetDate->format('F Y');
 
 
-        $userNotification = new UserNotificationController(); 
-        $userNotification->create('2', 'test', 'hello I am just testing', 'localhost/tesitng', 0, 'idk');
+        // $userNotification = new UserNotificationController(); 
+        // $userNotification->create('2', 'test', 'hello I am just testing', 'localhost/tesitng', 0, 'idk');
 
 
         return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'noteHabit', 'previousMonth', 'nextMonth', 'currentMonthDisplay', 'targetDate'));

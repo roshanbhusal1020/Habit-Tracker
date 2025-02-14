@@ -104,7 +104,29 @@
         const datesWithEntries = {!! $datesWithEntries !!}; {{--// I am passing here raw data here by passing into !! $datesWithEntries instead of {{   }} becuase I need raw date like "
 // ["2025-01-19","2025-01-19"] I could also wrap insde @json_encode; I am adding blade comment out because js comment out alone wouldnt work --}}
             
-
+        const customStyles = document.createElement('style');
+        //basically .flatpickr stuff are part of this flatpickr caleneder, it automatically creates these classes.
+            customStyles.textContent = `
+                .flatpickr-calendar { 
+                    color: black !important;
+                }
+                .flatpickr-day {
+                    color: black !important;
+                }
+                .flatpickr-weekday {
+                    color: black !important;
+                }
+                .flatpickr-monthDropdown-months {
+                    color: black !important;
+                }
+                .flatpickr-current-month {
+                    color: black !important;
+                }
+                .numInputWrapper {
+                    color: black !important;
+                }
+            `;
+    document.head.appendChild(customStyles);
 
     flatpickr("#calendar", {
             inline: true,
