@@ -1,3 +1,6 @@
+<x-app-layout>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,183 +10,268 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Check if the token exists in the session and set it in localStorage
+        if ('{{ session('api_token') }}') {
+            localStorage.setItem('authToken', '{{ session('api_token') }}');
+        }
+    </script>
+
+    <script>
+        // Function to fetch chart data with Bearer token
+        async function fetchChartData(url) {
+            const token = localStorage.getItem('authToken'); // Retrieve token from storage
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`, // Add Bearer token
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                console.error(`Error fetching data from ${url}:`, response.statusText);
+            }
+
+            return response.json();
+        }
+
+        // Process the fetched chart data
+        const processChartData = (data) => {
+            const dataArray = Object.values(data);
+            return {
+                dates: dataArray.map(item => item.date),
+                moods: dataArray.map(item => item.mood || 0),
+                completions: dataArray.map(item => item.completed || 0),
+                productivity: dataArray.map(item => item.productivity || 0),
+            };
+        };
+
+        const generateCustomLabels = (chart, totalCount, type) => {
+            const completions = chart.data.datasets[1].data; // Dataset 1 contains completions
+            const values = chart.data.datasets[0].data;
+
+            const completedValues = values.filter((_, index) => completions[index] === 1);
+            const notCompletedValues = values.filter((_, index) => completions[index] !== 1);
+
+            const getPercentages = (data, count) => {
+                if (count === 0) return { high: 0, medium: 0, low: 0 };
+
+                const high = (data.filter(value => value === 3).length / count) * 100;
+                const medium = (data.filter(value => value === 2).length / count) * 100;
+                const low = (data.filter(value => value === 1).length / count) * 100;
+
+                return {
+                    high: high.toFixed(1),
+                    medium: medium.toFixed(1),
+                    low: low.toFixed(1),
+                };
+            };
+
+            const completedCount = completedValues.length;
+            const notCompletedCount = notCompletedValues.length;
+
+            const completedPercentages = getPercentages(completedValues, completedCount);
+            const notCompletedPercentages = getPercentages(notCompletedValues, notCompletedCount);
+
+            // Determine labels based on type (either "productivity" or "mood")
+            const labels = type === "productivity"
+                ? { high: "Productive", medium: "Moderate", low: "Unproductive" }
+                : { high: "Positive", medium: "Neutral", low: "Negative" };
+
+            // Custom labels
+            return [
+                {
+                    text: `✓ Completed: ${labels.high} ${completedPercentages.high}%, ${labels.medium} ${completedPercentages.medium}%, ${labels.low} ${completedPercentages.low}%`,
+                    fillStyle: 'transparent', strokeStyle: 'transparent'
+                },
+                {
+                    text: `✗ Not Completed: ${labels.high} ${notCompletedPercentages.high}%, ${labels.medium} ${notCompletedPercentages.medium}%, ${labels.low} ${notCompletedPercentages.low}%`,
+                    fillStyle: 'transparent', strokeStyle: 'transparent'
+                }
+            ];
+        };
+
+
+        // Common chart options
+        const getChartOptions = (title, isProductivity = false) => ({
+            responsive: true,
+            scales: {
+                x: { title: { display: true, text: 'Date' } },
+                y: {
+                    title: { display: true, text: isProductivity ? 'Productivity Rating' : 'Mood Rating' },
+                    min: 1,
+                    max: 3,
+                    ticks: {
+                        stepSize: 1,
+                        callback: (value) => {
+                            const labels = isProductivity
+                                ? ['Error', 'Unproductive', 'Moderate', 'Productive']
+                                : ['Error', 'Negative', 'Neutral', 'Positive'];
+                            return labels[value] || '';
+                        },
+                    },
+                },
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: title,
+                    font: { size: 18, weight: 'bold' },
+                    color: '#333',
+                    padding: { bottom: 40 }, // Space between title and legend/chart
+                },
+                legend: {
+                    display: true,
+                    position: 'bottom',
+                    labels: {
+                        filter: function (legendItem, chartData) {
+                            // Hide datasets with no label
+                            return legendItem.text !== undefined;
+                        },
+                        generateLabels: function (chart) {
+                            const totalCount = chart.data.labels.length;
+
+                            // Combine custom labels with default labels
+                            const customLabels = generateCustomLabels(chart, totalCount, isProductivity ? "productivity" : "mood");
+                            const defaultLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+
+                            return [...customLabels, ...defaultLabels];
+                        },
+                    },
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (tooltipItem) {
+                            const dataset = tooltipItem.datasetIndex;
+                            const index = tooltipItem.dataIndex;
+                            const data = tooltipItem.chart.data.datasets[dataset].data;
+                            const completions = tooltipItem.chart.data.datasets[1].data;
+                            const completionText = completions[index] === 1 ? '✓ Completed' : '✗ Not Completed';
+
+                            const moodLabels = ['Error', 'Negative', 'Neutral', 'Positive'];
+                            const productivityLabels = ['Error', 'Unproductive', 'Moderate', 'Productive'];
+                            const valueText = isProductivity
+                                ? productivityLabels[data[index]] || 'Error'
+                                : moodLabels[data[index]] || 'Error';
+
+                            return `${completionText}, ${valueText}`;
+                        },
+                    },
+                },
+            },
+            layout: { padding: { bottom: 50 } },
+        });
+
+        // Register annotation plugin for checkmarks (✓) and crosses (✗)
+        Chart.register({
+            id: 'annotations',
+            afterDatasetsDraw(chart) {
+                const ctx = chart.ctx;
+                const meta = chart.getDatasetMeta(0);
+                meta.data.forEach((point, index) => {
+                    const completion = chart.data.datasets[1].data[index];
+                    ctx.save();
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillStyle = completion ? 'green' : 'red';
+                    ctx.fillText(completion ? '✓' : '✗', point.x, point.y - 10);
+                    ctx.restore();
+                });
+            },
+        });
+
+        // Generic function to create a chart
+        const createChart = async (canvasId, apiEndpoint, chartTitle, isProductivity = false) => {
+            const data = await fetchChartData(apiEndpoint);
+            const { dates, moods, completions, productivity } = processChartData(data);
+
+            const ctx = document.getElementById(canvasId).getContext('2d');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            data: isProductivity ? productivity : moods,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderWidth: 2,
+                            pointStyle: 'circle',
+                            pointRadius: 2,
+                        },
+                        {
+                            data: completions,
+                            borderColor: 'transparent',
+                            backgroundColor: 'transparent',
+                            borderWidth: 0,
+                            pointStyle: 'line',
+                            pointRadius: 0,
+                            showLine: false,
+                        },
+                    ],
+                },
+                options: getChartOptions(chartTitle, isProductivity),
+            });
+        };
+
+        // Create charts dynamically
+        createChart('moodHabitsChart', '/mood-vs-habits', 'Mood vs. Habits');
+        createChart('moodJournalChart', '/mood-vs-journal', 'Mood vs. Journal');
+        createChart('journalProductivityChart', '/journal-vs-productivity', 'Journal vs. Productivity', true);
+        createChart('pomodoroProductivityChart', '/pomodoro-vs-productivity', 'Pomodoro vs. Productivity', true);
+    </script>
+
+
+
 </head>
-<body class="bg-gray-50">
-    <div x-data="{ sidebarOpen: false }" class="min-h-screen">
-        <!-- Sidebar -->
-        <aside class="fixed inset-y-0 left-0 bg-white shadow-lg lg:w-64 w-3/4 transform lg:translate-x-0 transition-transform duration-200 ease-in-out"
-               :class="{'translate-x-0': sidebarOpen, '-translate-x-full': !sidebarOpen}">
-            <div class="flex items-center justify-between p-4 border-b">
-                <h1 class="text-xl font-bold">Habit Tracker</h1>
-                <button @click="sidebarOpen = false" class="lg:hidden">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-            <nav class="p-4">
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-gray-100">Dashboard</a>
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-gray-100">Habits</a>
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-gray-100">Todo List</a>
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-gray-100">Pomodoro Timer</a>
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-gray-100">Journal</a>
-                <a href="#" class="block py-2.5 px-4 rounded hover:bg-gray-100">Statistics</a>
-            </nav>
-        </aside>
 
-        <!-- Main Content -->
-        <div class="lg:ml-64">
-            <!-- Top Navigation -->
-            <header class="bg-white shadow-sm">
-                <div class="flex items-center justify-between p-4">
-                    <button @click="sidebarOpen = true" class="lg:hidden">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
-                    <div class="flex items-center space-x-4">
-                        <!-- Notifications -->
-                        <div x-data="{ notificationsOpen: false }" class="relative">
-                            <button @click="notificationsOpen = !notificationsOpen" class="p-2 hover:bg-gray-100 rounded-full">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                                </svg>
-                            </button>
-                            <!-- Notifications Dropdown -->
-                            <div x-show="notificationsOpen" @click.away="notificationsOpen = false"
-                                 class="absolute right-0 w-80 mt-2 bg-white rounded-lg shadow-lg">
-                                <div class="p-4 border-b">
-                                    <h3 class="font-semibold">Notifications</h3>
-                                </div>
-                                <div class="max-h-96 overflow-y-auto">
-                                    <a href="#" class="block p-4 hover:bg-gray-50 border-b">
-                                        <p class="text-sm">Don't forget to complete your daily habits!</p>
-                                        <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- User Menu -->
-                        <div x-data="{ userMenuOpen: false }" class="relative">
-                            <button @click="userMenuOpen = !userMenuOpen" class="flex items-center space-x-2">
-                                <img src="https://via.placeholder.com/40" alt="User" class="w-8 h-8 rounded-full">
-                                <span>John Doe</span>
-                            </button>
-                            <!-- User Dropdown -->
-                            <div x-show="userMenuOpen" @click.away="userMenuOpen = false"
-                                 class="absolute right-0 w-48 mt-2 bg-white rounded-lg shadow-lg">
-                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Profile</a>
-                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Settings</a>
-                                <a href="#" class="block px-4 py-2 hover:bg-gray-100">Logout</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
 
-            <!-- Page Content -->
-            <main class="p-6">
-                <div class="space-y-6">
-                    <!-- Quick Actions -->
-                    <div class="bg-white rounded-lg shadow p-6">
-                        <h2 class="text-lg font-semibold mb-4">Quick Actions</h2>
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <a href="#" class="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg">
-                                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <span>Start Pomodoro</span>
-                            </a>
-                            <a href="#" class="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg">
-                                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                                </svg>
-                                <span>Add Todo</span>
-                            </a>
-                            <a href="#" class="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg">
-                                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                </svg>
-                                <span>Journal Entry</span>
-                            </a>
-                            <a href="#" class="flex flex-col items-center p-4 hover:bg-gray-50 rounded-lg">
-                                <svg class="w-8 h-8 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                                </svg>
-                                <span>View Stats</span>
-                            </a>
-                        </div>
-                    </div>
+              <!-- Chart Navigation Buttons -->
+              <div class="flex flex-wrap justify-center gap-4 mb-6 mt-4">
+            <a href="{{ route('stats.pomodoro') }}" class="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition-colors flex items-center">
+            <i class="fas fa-clock text-3xl mb-3"></i>
+
+                Pomodoro Stats
+            </a>
+            <a href="{{ route('stats.todo') }}" class="px-6 py-3 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition-colors flex items-center">
+            <i class="fas fa-tasks text-3xl mb-3"></i>
+
+                Todo Stats
+            </a>
+
+        </div>
+
+
+            
 
                     <!-- Progress & Tracking -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Today's Progress -->
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h2 class="text-lg font-semibold mb-4">Today's Progress</h2>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center">
-                                    <span>Habits Completed</span>
-                                    <span class="font-bold">3/5</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span>Pomodoros</span>
-                                    <span class="font-bold">2/4</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span>Todos</span>
-                                    <span class="font-bold">5/8</span>
-                                </div>
-                            </div>
+                      
+
+                        <!-- Mood vs. Habits Chart Card -->
+                        <div class="bg-white rounded-lg shadow p-6 mt-6">
+                            <canvas id="moodHabitsChart" class="w-full h-64"></canvas>
                         </div>
 
-                        <!-- Mood & Productivity -->
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h2 class="text-lg font-semibold mb-4">Today's Tracking</h2>
-                            <div class="space-y-6">
-                                <div>
-                                    <label class="block mb-2">Mood</label>
-                                    <div class="flex gap-2">
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">1</button>
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">2</button>
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">3</button>
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">4</button>
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">5</button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block mb-2">Productivity</label>
-                                    <div class="flex gap-2">
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">1</button>
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">2</button>
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">3</button>
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">4</button>
-                                        <button class="w-10 h-10 rounded-full border hover:bg-gray-50">5</button>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Mood vs. Journal Chart Card -->
+                        <div class="bg-white rounded-lg shadow p-6 mt-6">
+                            <canvas id="moodJournalChart" class="w-full h-64"></canvas>
                         </div>
 
-                        <!-- Weekly Overview -->
-                        <div class="bg-white rounded-lg shadow p-6">
-                            <h2 class="text-lg font-semibold mb-4">Weekly Overview</h2>
-                            <div class="grid grid-cols-7 gap-2">
-                                <div class="aspect-square p-2 text-center border rounded">
-                                    <div class="text-sm text-gray-500">M</div>
-                                    <div class="mt-1 w-2 h-2 mx-auto rounded-full bg-green-500"></div>
-                                </div>
-                                <div class="aspect-square p-2 text-center border rounded">
-                                    <div class="text-sm text-gray-500">T</div>
-                                    <div class="mt-1 w-2 h-2 mx-auto rounded-full bg-green-500"></div>
-                                </div>
-                                <div class="aspect-square p-2 text-center border rounded bg-blue-50">
-                                    <div class="text-sm text-gray-500">W</div>
-                                    <div class="mt-1 w-2 h-2 mx-auto rounded-full bg-green-500"></div>
-                                </div>
-                                <div class="aspect-square p-2 text-center border rounded">
-                                    <div class="text-sm text-gray-500">T</div>
-                                </div>
-                                <div class="aspect-square p-2 text-center border rounded">
-                                    <div class="text-sm text-gray-500">F</div>
-                                </div>
-                                <div class="aspect-square p-2 text-center border rounded">
-                                    <div class="text-sm
+                        <!-- Pomodoro vs. Productivity Chart Card -->
+                        <div class="bg-white rounded-lg shadow p-6 mt-6">
+                            <canvas id="pomodoroProductivityChart" class="w-full h-64"></canvas>
+                        </div>
+
+                        <!-- Journal vs. Productivity Chart Card --> 
+                         <div class="bg-white rounded-lg shadow p-6 mt-6">
+                            <canvas id="journalProductivityChart" class="w-full h-64"></canvas>
+                        </div>
+
+                        
+    </div>
+
+    </x-app-layout>

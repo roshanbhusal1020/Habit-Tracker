@@ -129,6 +129,12 @@
                 <h3 class="text-lg font-semibold">Journal</h3>
                 <p class="text-violet-100">Write today's entry</p>
             </a>
+            <a href="{{route('stats.habit')}}" 
+               class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
+                <i class="fas fa-book text-3xl mb-3"></i>
+                <h3 class="text-lg font-semibold">View Progress</h3>
+                <p class="text-violet-100">Track your improvement</p>
+            </a>
         </div>
 
         <!-- Two Column Layout -->
@@ -202,56 +208,7 @@
                 </div>
             </div>
 
-            <!-- Side Column -->
-            <div class="space-y-8">
-                <!-- Progress Overview -->
-                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Progress Overview</h2>
-                    <div class="space-y-6">
-                        @foreach([
-                                ['label' => 'Task Completion', 'value' => 70, 'icon' => 'fas fa-check-circle'],
-                                ['label' => 'Habit Streak', 'value' => 85, 'icon' => 'fas fa-chart-line'],
-                                ['label' => 'Focus Time', 'value' => 60, 'icon' => 'fas fa-clock']
-                            ] as $stat)
-                            <div class="space-y-2">
-                                <div class="flex justify-between items-center">
-                                    <div class="flex items-center gap-2">
-                                        <i class="{{ $stat['icon'] }} text-emerald-600"></i>
-                                        <span class="text-gray-600">{{ $stat['label'] }}</span>
-                                    </div>
-                                    <span class="font-medium">{{ $stat['value'] }}%</span>
-                                </div>
-                                <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                                    <div class="h-full bg-emerald-600 rounded-full transition-all duration-500"
-                                         style="width: {{ $stat['value'] }}%"></div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
 
-                <!-- Recent Activity -->
-                <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-6">Recent Activity</h2>
-                    <div class="space-y-4">
-                        @foreach([
-                                ['title' => 'Completed focus session', 'time' => '2h ago', 'icon' => 'fas fa-clock'],
-                                ['title' => 'Added new task', 'time' => '3h ago', 'icon' => 'fas fa-plus-circle'],
-                                ['title' => 'Updated habit streak', 'time' => '5h ago', 'icon' => 'fas fa-chart-line']
-                            ] as $activity)
-                            <div class="flex items-center gap-4">
-                                <div class="p-2 bg-slate-100 rounded-lg">
-                                    <i class="{{ $activity['icon'] }} text-emerald-600"></i>
-                                </div>
-                                <div>
-                                    <p class="font-medium text-gray-900">{{ $activity['title'] }}</p>
-                                    <p class="text-sm text-gray-500">{{ $activity['time'] }}</p>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 

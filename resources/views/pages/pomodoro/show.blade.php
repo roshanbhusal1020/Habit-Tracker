@@ -73,10 +73,14 @@
         }
 
         setupEventListeners() {
-
             this.startButton.addEventListener('click', this.handleStartPause.bind(this))
-            this.stopButton.addEventListener('click', this.handleStartPause.bind(this))
-            
+            this.stopButton.addEventListener('click', () => {
+                this.stopTimer();
+                this.isRunning = false;
+                this.startButton.textContent = 'Start';
+
+                this.updateDisplay();
+            })
         }
 
         async startTimer() {
@@ -128,7 +132,7 @@
 
 
                 this.updateDisplay();
-            }, 1)
+            }, 1000)
         }
 
 

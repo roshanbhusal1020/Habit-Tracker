@@ -65,7 +65,7 @@
                             <i class="fa fa-bell"></i>
                         </button>
                     </div>
-                    <button id="markAllRead" class="mark-all-read">Mark all as read</button>
+                    <!-- <button id="markAllRead" class="mark-all-read">Mark all as read</button> -->
                     <div class="notification-list">
                         <div id="loadingSpinner" class="loading-spinner"></div> 
                         <!-- I dont need spinner, I should just remove this -->
@@ -162,7 +162,7 @@
                     const notificationItem = document.createElement("div");
                     notificationItem.classList.add("notification-item");
                     notificationItem.innerHTML = `
-                    <a href="${notification.url}">
+                    <a href="${notification.url}"  ${notification.read ?  '' : 'style="color: red; background-color: white;"'} class="notification-link" data-id="${notification.id}">
                         <p>${notification.message}</p> <!-- Changed from content to message -->
                         <p class="text-sm text-gray-500">${notification.created_at}</p>
                     </a>
@@ -176,6 +176,9 @@
                 } else {
                     notificationBadge.style.display = "none";
                 }
+
+                addClickHandlers();
+
             }
         })
         .catch((error) => {
@@ -210,9 +213,9 @@
                 const notificationItem = document.createElement("div");
                 notificationItem.classList.add("notification-item");
                 notificationItem.innerHTML = `
-                    <a href="${notification.url}">
-                        <p>${notification.id} </p>
-                        <p>${notification.content}</p>
+                    <a href="${notification.url}"${notification.read ?  '' : 'style="color: red; background-color: white;"'} class="notification-link" data-id="${notification.id}">
+                        <p>${notification.message}</p> <!-- Changed from content to message -->
+                        <p class="text-sm text-gray-500">${notification.created_at}</p>
                     </a>
                 `;
                 notificationIds.push(notification.id)
@@ -221,6 +224,7 @@
 
                
             });
+            addClickHandlers();
         })
         .catch(error => {
             loadingSpinner.style.display = "none";
@@ -228,6 +232,30 @@
             notificationsContainer.innerHTML = "<p>Error loading notifications.</p>";
         });
 }
+
+ function addClickHandlers() {
+        const links = document.querySelectorAll('.notification-link');
+        
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const notificationId = this.getAttribute('data-id');
+                
+                // Send request to mark as read
+                fetch(`/notification/mark-read/${notificationId}`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .catch(error => {
+                    console.error('Error marking notification as read:', error);
+                });
+                
+                // Let the default link behavior continue
+            });
+        });
+    }
+
 document.addEventListener('click', function(event) {
         if (!notificationBell.contains(event.target) && !notificationDropdown.contains(event.target)) {
             notificationDropdown.style.display = 'none';

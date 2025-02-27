@@ -12,8 +12,7 @@ use App\Http\Controllers\TodoController;
 use App\Http\Controllers\UserNotificationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ChartController;
-u
-use App\Models\UserNotification;
+
 use Illuminate\Support\Facades\Auth;
 
 // use App\Http\Controllers\StatsController;
@@ -81,7 +80,7 @@ Route::middleware('auth')->group(function () {
 
     // Route::get('/notification', [UserNotificationController::class, 'show'])->name('notification.show');
     Route::get('/notification', [NotificationController::class, 'index']);
-
+    Route::post('/notification/mark-read/{id}', [NotificationController::class, 'markAsRead']);
     Route::get('/mood-vs-habits', [ChartController::class, 'moodVsHabits']);
     Route::get('/mood-vs-journal', [ChartController::class, 'moodVsJournal']);
     Route::get('/pomodoro-vs-productivity', [ChartController::class, 'pomodoroVsProductivity']);
@@ -92,3 +91,4 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
