@@ -194,7 +194,7 @@ class StatsController extends Controller
                 ->orderBy('due_date')
                 ->take(5)
                 ->get();
-        dump($completionRate, $priorityDistribution, $punchualityStats, $upcomingDeadlines, $completionTimeline);
+        // dump($completionRate, $priorityDistribution, $punchualityStats, $upcomingDeadlines, $completionTimeline);
 
         return view('stats.todoChart.show', compact(
             'completionRate',
