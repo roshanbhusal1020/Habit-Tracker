@@ -6,26 +6,6 @@ use Illuminate\Support\Facades\DB;
 
 class ChartController extends Controller
 {
-    private function mapMoodValue($value)
-    {
-        return match ($value) {
-            'positive' => 3,
-            'neutral' => 2,
-            'negative' => 1,
-            default => 0, // Default to Error
-        };
-    }
-
-    private function mapProductivityValue($value)
-    {
-        return match ($value) {
-            'productive' => 3,
-            'moderate' => 2,
-            'unproductive' => 1,
-            default => 0, // Default to Error or Unknown
-        };
-    }
-
     private function fetchHabitData($userId, $type, $valueField = 'value')
     {
         return DB::table('habit_entries')
@@ -39,10 +19,6 @@ class ChartController extends Controller
 
     private function fetchJournalData($userId)
     {
-
-
-
-
         return DB::table('journals')
             ->where('user_id', $userId)
             ->selectRaw("DATE(created_at) as entry_date, id")
@@ -75,7 +51,6 @@ class ChartController extends Controller
         return $mappedDates;
     }
 
-
     public function moodVsHabits(Request $request)
     {
         $userId = $request->user()->id;
@@ -95,7 +70,7 @@ class ChartController extends Controller
         $result = $this->combineAndMapDates($startDate, $endDate, [$moodData, $completionData], function ($date) use ($moodData, $completionData) {
             return [
                 'date' => $date,
-                'mood' => isset($moodData[$date]) ? $this->mapMoodValue($moodData[$date]) : 0,
+                'mood' => isset($moodData[$date]) ? $moodData[$date] : 0,
                 'completed' => $completionData[$date] ?? 0,
             ];
         });
@@ -118,7 +93,7 @@ class ChartController extends Controller
         $result = $this->combineAndMapDates($startDate, $endDate, [$moodData, $journalData], function ($date) use ($moodData, $journalData) {
             return [
                 'date' => $date,
-                'mood' => isset($moodData[$date]) ? $this->mapMoodValue($moodData[$date]) : 0,
+                'mood' => isset($moodData[$date]) ? $moodData[$date] : 0,
                 'completed' => isset($journalData[$date]) ? 1 : 0, // Mark as completed if journal entry exists
             ];
         });
@@ -144,7 +119,7 @@ class ChartController extends Controller
             function ($date) use ($productivityData, $pomodoroData) {
                 return [
                     'date' => $date,
-                    'productivity' => isset($productivityData[$date]) ? $this->mapProductivityValue($productivityData[$date]) : 0,
+                    'productivity' => isset($productivityData[$date]) ? $productivityData[$date] : 0,
                     'completed' => isset($pomodoroData[$date]) ? 1 : 0, // Mark as completed if pomodoro entry exists
                 ];
             },
@@ -152,7 +127,6 @@ class ChartController extends Controller
             fn($item) => $item['productivity'] > 0
         );
 
-        dump($pomodoroData);
         return response()->json($result->values());
     }
 
@@ -187,7 +161,7 @@ class ChartController extends Controller
             function ($date) use ($productivityData, $journalData) {
                 return [
                     'date' => $date,
-                    'productivity' => isset($productivityData[$date]) ? $this->mapProductivityValue($productivityData[$date]) : 0,
+                    'productivity' => isset($productivityData[$date]) ? $productivityData[$date] : 0,
                     'completed' => isset($journalData[$date]) ? 1 : 0, // Mark as completed if journal entry exists
                 ];
             },

@@ -14,12 +14,14 @@
             <!-- Productivity -->
             <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
                 <label class="block text-lg font-semibold text-gray-900 mb-3">Today's Productivity</label>
-                <select 
+                <select
                     class="form-select w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-500"
-                    onchange="saveMood('productivity', this.value, {{$productivityHabit->id}}, '{{ now()->format('Y-m-d') }}')">
+                    onchange="saveMood('productivity', this.value, {{ $productivityHabit->id }}, '{{ now()->format('Y-m-d') }}')"
+                >
                     <option value="">Select</option>
-                    @foreach(['productive' => '✅ Productive', 'moderate' => '⚡ Moderately Productive', 'unproductive' => '💤 Unproductive'] as $value => $label)
-                        <option value="{{$value}}"
+                    @foreach(['3' => '✅ Productive', '2' => '⚡ Moderately Productive', '1' => '💤 Unproductive'] as $value => $label)
+                        <option
+                            value="{{ $value }}"
                             @if(isset($entries[now()->format('Y-m-d')]))
                                 @foreach($entries[now()->format('Y-m-d')] as $entry)
                                     @if($entry->habit_id == $productivityHabit->id && $entry->value == $value)
@@ -27,7 +29,9 @@
                                     @endif
                                 @endforeach
                             @endif
-                        >{{$label}}</option>
+                        >
+                            {{ $label }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -35,12 +39,14 @@
             <!-- Mood -->
             <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
                 <label class="block text-lg font-semibold text-gray-900 mb-3">Today's Mood</label>
-                <select 
+                <select
                     class="form-select w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-500"
-                    onchange="saveMood('mood', this.value, {{$moodHabit->id}}, '{{ now()->format('Y-m-d') }}')">
+                    onchange="saveMood('mood', this.value, {{ $moodHabit->id }}, '{{ now()->format('Y-m-d') }}')"
+                >
                     <option value="">Select</option>
-                    @foreach(['positive' => '😊 Positive', 'neutral' => '😐 Neutral', 'negative' => '😢 Negative'] as $value => $label)
-                        <option value="{{$value}}"
+                    @foreach(['3' => '😊 Positive', '2' => '😐 Neutral', '1' => '😢 Negative'] as $value => $label)
+                        <option
+                            value="{{ $value }}"
                             @if(isset($entries[now()->format('Y-m-d')]))
                                 @foreach($entries[now()->format('Y-m-d')] as $entry)
                                     @if($entry->habit_id == $moodHabit->id && $entry->value == $value)
@@ -48,7 +54,9 @@
                                     @endif
                                 @endforeach
                             @endif
-                        >{{$label}}</option>
+                        >
+                            {{ $label }}
+                        </option>
                     @endforeach
                 </select>
             </div>
@@ -56,15 +64,15 @@
             <!-- Notes -->
             <div class="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow">
                 <label class="block text-lg font-semibold text-gray-900 mb-3">Today's Note</label>
-                <input 
+                <input
                     type="text"
                     class="form-input w-full rounded-lg border-gray-200 focus:ring-2 focus:ring-emerald-500"
                     placeholder="Add note..."
-                    onchange="saveMood('note', this.value, {{$noteHabit->id}}, '{{ now()->format('Y-m-d') }}')"
+                    onchange="saveMood('note', this.value, {{ $noteHabit->id }}, '{{ now()->format('Y-m-d') }}')"
                     @if(isset($entries[now()->format('Y-m-d')]))
                         @foreach($entries[now()->format('Y-m-d')] as $entry)
                             @if($entry->habit_id == $noteHabit->id && $entry->note)
-                                value="{{$entry->note}}"
+                                value="{{ $entry->note }}"
                             @endif
                         @endforeach
                     @endif
@@ -75,7 +83,7 @@
         <!-- Quick Stats Cards with gradients -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <!-- Focus Timer Card -->
-            <a href="{{route('pomodoro.show')}}" 
+            <a href="{{ route('pomodoro.show') }}"
                class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                 <div class="flex justify-between items-start">
                     <div>
@@ -87,27 +95,28 @@
             </a>
 
             @php
-            $todosNumber = $todos->count();
+                $todosNumber = $todos->count();
 
-            $regularHabits = $habits->filter(function($habit) use ($noteHabit, $productivityHabit, $moodHabit){
-                return !in_array($habit->id, [$noteHabit->id, $productivityHabit->id, $moodHabit->id]);
-            }); 
-    
-            $totalHabits = $regularHabits->count(); 
+                $regularHabits = $habits->filter(function($habit) use ($noteHabit, $productivityHabit, $moodHabit){
+                    return !in_array($habit->id, [$noteHabit->id, $productivityHabit->id, $moodHabit->id]);
+                });
 
-            $completedHabits = 0;
+                $totalHabits = $regularHabits->count();
+
+                $completedHabits = 0;
 
 
-            if(isset($entries[now()->format('Y-m-d')])) {
-                $completedHabits = $entries[now()->format('Y-m-d')]
-                    ->filter(function($entry) use ($noteHabit, $productivityHabit, $moodHabit) {
-                        return !in_array($entry->habit_id, [$noteHabit->id, $productivityHabit->id, $moodHabit->id])
-                            && $entry->value == 1;
-                    })->count();
-             }
+                if(isset($entries[now()->format('Y-m-d')])) {
+                    $completedHabits = $entries[now()->format('Y-m-d')]
+                        ->filter(function($entry) use ($noteHabit, $productivityHabit, $moodHabit) {
+                            return !in_array($entry->habit_id, [$noteHabit->id, $productivityHabit->id, $moodHabit->id])
+                                && $entry->value == 1;
+                        })
+                        ->count();
+                }
             @endphp
             <!-- Tasks Overview Card -->
-            <a href="{{route('todo.index')}}" 
+            <a href="{{ route('todo.index') }}"
                class="bg-gradient-to-br from-sky-500 to-sky-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                 <i class="fas fa-tasks text-3xl mb-3"></i>
                 <h3 class="text-lg font-semibold">Tasks</h3>
@@ -115,7 +124,7 @@
             </a>
 
             <!-- Habits Card -->
-            <a href="{{route('habits.show')}}" 
+            <a href="{{ route('habits.show') }}"
                class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                 <i class="fas fa-chart-line text-3xl mb-3"></i>
                 <h3 class="text-lg font-semibold">Habits</h3>
@@ -123,13 +132,13 @@
             </a>
 
             <!-- Journal Card -->
-            <a href="{{route('journal.show')}}" 
+            <a href="{{ route('journal.show') }}"
                class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                 <i class="fas fa-book text-3xl mb-3"></i>
                 <h3 class="text-lg font-semibold">Journal</h3>
                 <p class="text-violet-100">Write today's entry</p>
             </a>
-            <a href="{{route('stats.habit')}}" 
+            <a href="{{ route('stats.habit') }}"
                class="bg-gradient-to-br from-violet-500 to-violet-600 rounded-xl p-6 text-white shadow-lg hover:shadow-xl transition-all hover:-translate-y-1">
                 <i class="fas fa-book text-3xl mb-3"></i>
                 <h3 class="text-lg font-semibold">View Progress</h3>
@@ -145,7 +154,7 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-semibold text-gray-900">Current Tasks</h2>
-                        <a href="{{route('todo.index')}}" class="text-emerald-600 hover:text-emerald-700 font-medium">View All</a>
+                        <a href="{{ route('todo.index') }}" class="text-emerald-600 hover:text-emerald-700 font-medium">View All</a>
                     </div>
                     <div class="space-y-4">
                         @foreach($todos as $todo)
@@ -155,19 +164,21 @@
                                     <form action="{{ route('todos.toggle', $todo->id) }}" method="POST" class="flex items-center">
                                         @csrf
                                         @method('PATCH')
-                                        <input type="checkbox"
-                                               class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
-                                               name="completed" 
-                                               onchange="this.form.submit()"
-                                               {{ $todo->completed ? 'checked' : '' }}>
+                                        <input
+                                            type="checkbox"
+                                            class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
+                                            name="completed"
+                                            onchange="this.form.submit()"
+                                            {{ $todo->completed ? 'checked' : '' }}
+                                        >
                                         <span class="ml-3">{{ $todo->task }}</span>
                                     </form>
                                 </div>
                                 <div class="flex items-center gap-4">
-                                    <p class="text-sm text-gray-500">{{$todo->due_date}}</p>
-                                    <span class="text-sm px-3 py-1 rounded-full 
-                                        {{ $todo->priority == 2 ? 'bg-red-100 text-red-800' : 
-                                           ($todo->priority == 1 ? 'bg-yellow-100 text-yellow-800' : 
+                                    <p class="text-sm text-gray-500">{{ $todo->due_date }}</p>
+                                    <span class="text-sm px-3 py-1 rounded-full
+                                        {{ $todo->priority == 2 ? 'bg-red-100 text-red-800' :
+                                           ($todo->priority == 1 ? 'bg-yellow-100 text-yellow-800' :
                                                        'bg-green-100 text-green-800') }}">
                                         {{ $todo->priority == 2 ? 'High' : ($todo->priority == 1 ? 'Medium' : 'Low') }}
                                     </span>
@@ -182,15 +193,15 @@
                 <div class="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
                     <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-semibold text-gray-900">Daily Habits</h2>
-                        <a href="{{route('habits.show')}}" class="text-emerald-600 hover:text-emerald-700 font-medium">Manage Habits</a>
+                        <a href="{{ route('habits.show') }}" class="text-emerald-600 hover:text-emerald-700 font-medium">Manage Habits</a>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         @foreach($habits as $habit)
                             @if (!in_array($habit->name, ['Mood', 'Productivity', 'Note']))
                                 <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors">
                                     <span class="font-medium">{{ $habit->name }}</span>
-                                    <input 
-                                        type="checkbox" 
+                                    <input
+                                        type="checkbox"
                                         onchange="saveEntry('{{ $habit->name }}', this, {{ $habit->id }}, '{{ now()->format('Y-m-d') }}')"
                                         class="w-5 h-5 text-emerald-600 rounded focus:ring-emerald-500"
                                         @if(isset($entries[now()->format('Y-m-d')]))
@@ -207,65 +218,59 @@
                     </div>
                 </div>
             </div>
-
-
         </div>
     </main>
 
-    
-
     <script>
-    function saveEntry(name, input, habitId, date) {
-
-        console.log('Trying to send', {name, input, habitId, date})
-        fetch('/habits/entries/store', {
-            method: 'POST', 
-            headers:  {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({
-            name: name,
-            habit_id: habitId, 
-            date:date, 
-            value: input.checked ? 1:0
-        })
-        })
-        .then (response=>response.json())
-        .then(data=> {
-            console.log('Success:', data)
-        })
-        .catch(error => {
-            console.error('Error:', error)
-        })
+        function saveEntry(name, input, habitId, date) {
+            console.log('Trying to send', {name, input, habitId, date});
+            fetch('/habits/entries/store', {
+                method: 'POST',
+                headers:  {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    name: name,
+                    habit_id: habitId,
+                    date: date,
+                    value: input.checked ? 1 : 0,
+                }),
+            })
+            .then (response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         }
 
         function saveMood(name, value, habitId, date) {
             // console.log(date);
             console.log('name: '+ name + " value: " + value + ' habitId: ' + habitId + ' date: ' + date);
             fetch('/habits/entries/store', {
-            method: 'POST', 
-            headers:  {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({
-            name: name,
-            habit_id: habitId, 
-            date:date, 
-            value: value
-        })
-        })
-        .then (response=>response.json())
-        .then(data=> {
-            console.log('Success:', data)
-        })
-        .catch(error => {
-            console.error('Error:', error)
-        })
-         
-    }
+                method: 'POST',
+                headers:  {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    name: name,
+                    habit_id: habitId,
+                    date: date,
+                    value: value,
+                }),
+            })
+            .then (response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+        }
     </script>
-                        </x-app-layout>
+</x-app-layout>

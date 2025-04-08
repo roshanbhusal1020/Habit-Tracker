@@ -9,7 +9,7 @@ use App\Models\Pomodoro;
 use App\Models\Todo;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-
+use Illuminate\Support\Collection;
 
 class StatsController extends Controller
 {
@@ -71,6 +71,7 @@ class StatsController extends Controller
             ->groupBy('date')
             ->orderBy('date')
             ->get();
+
         // dump($completionRate);
 
         // dump($focusTimeByDay);
@@ -111,13 +112,81 @@ class StatsController extends Controller
 
         //streak
 
+        /** @var \App\Models\User */
+        $authUser = auth()->user();
+        $inputDates = HabitEntry::query()
+            ->select([
+                DB::raw('DISTINCT(entry_date) AS entry_date'),
+            ])
+            ->where('user_id', $authUser->id)
+            ->where(DB::raw('DATE_FORMAT(entry_date, \'%Y-%m\')'), now()->format('Y-m'))
+            ->get()
+            ->pluck('entry_date');
+        $userHabits = $authUser->habits()
+            ->where('type', 'checkbox')
+            ->where(DB::raw('DATE_FORMAT(month_year, \'%Y-%m\')'), now()->format('Y-m'))
+            ->whereNull('deleted_from')
+            ->get()
+            ->map(function (Habit $habit) use ($authUser, $inputDates) {
+                $completedDates = $habit->entries()->where('value', '1')->get()->pluck('entry_date');
+                $uncompletedDates = collect($inputDates)->diff($completedDates)->values();
 
+                /** @var \App\Models\Habit */
+                $productivityHabit = $authUser->habits()
+                    ->where('type', 'productivity')
+                    ->first();
+                $habit['productivity'] = $this->calculateHabit($productivityHabit, $completedDates, $uncompletedDates);
 
-        $habits = Habit::where('user_id', auth()->id())->get();
+                /** @var \App\Models\Habit */
+                $moodHabit = $authUser->habits()
+                    ->where('type', 'mood')
+                    ->first();
+                $habit['mood'] = $this->calculateHabit($moodHabit, $completedDates, $uncompletedDates);
 
-        return view('stats.habitChart.show', compact('habits'));
+                return $habit;
+            });
+
+        $habits = $authUser->habits;
+
+        return view('stats.habitChart.show', compact('habits', 'userHabits'));
 
     }
+
+    public function calculateHabit(Habit $habit, Collection $completedDates, Collection $uncompletedDates)
+    {
+        $collection = collect();
+    
+        $completed = $habit->entries()
+            ->whereIn('entry_date', $completedDates)
+            ->get()
+            ->pluck('value');
+    
+        $avgCompleted = $completed->count() > 0 ? $completed->sum() / $completed->count() : 0;
+    
+        $uncompleted = $habit->entries()
+            ->whereIn('entry_date', $uncompletedDates)
+            ->get()
+            ->pluck('value');
+    
+        $avgUncompleted = $uncompleted->count() > 0 ? $uncompleted->sum() / $uncompleted->count() : 0;
+    
+        $difference = $avgCompleted - $avgUncompleted;
+    
+        $percentageIncrease = $avgUncompleted != 0
+            ? ($difference / $avgUncompleted) * 100
+            : null;
+    
+        $collection
+            ->put('completed', $completed)
+            ->put('avg_completed', $avgCompleted)
+            ->put('uncompleted', $uncompleted)
+            ->put('avg_uncompleted', $avgUncompleted)
+            ->put('difference', $difference)
+            ->put('percentage_increase', $percentageIncrease);
+    
+        return $collection;
+    }
+    
 
     public function getTodoListStats()
     {
@@ -212,10 +281,10 @@ class StatsController extends Controller
         // Chart to generate:
         // habit done- mood -> finished more or less (NOT REALLY :())
         // journal - mood
-        // journal - productivity 
+        // journal - productivity
         // pomodoro - producitivty
 
-        // Mood over the month-week chart 
+        // Mood over the month-week chart
         // productivity over the month-week chart
 
         //add notification for weekly/monthly report
@@ -223,32 +292,32 @@ class StatsController extends Controller
         $startDate = '2024-12-01';
         $endDate = '2024-12-31';
         $userId = 2;
-        
+
         // First, get all habits for the given month
         $habits = Habit::forMonth($startDate)
             ->where('user_id', $userId)
             ->where('type', '!=', 'mood')  // Exclude mood/productivity habits
             ->where('type', '!=', 'productivity')
             ->get();
-        
+
         // Get all entries for the date range
         $entries = HabitEntry::where('user_id', $userId)
             ->whereBetween('entry_date', [$startDate, $endDate])
             ->get();
-        
+
         // Transform the data
         $transformedData = [];
         $dates = Carbon::parse($startDate)->daysUntil($endDate);
-        
+
         foreach ($dates as $date) {
             $dateStr = $date->format('Y-m-d');
-            
+
             // Find mood rating for this date
             $moodEntry = $entries->first(function($entry) use ($dateStr) {
-                return $entry->entry_date == $dateStr && 
+                return $entry->entry_date == $dateStr &&
                        $entry->habit->type == 'mood';
             });
-            
+
             // Convert mood text to number
             $moodRating = 2; // default neutral
             if ($moodEntry) {
@@ -257,13 +326,13 @@ class StatsController extends Controller
                     case 'negative': $moodRating = 1; break;
                 }
             }
-            
+
             // Find productivity rating
             $prodEntry = $entries->first(function($entry) use ($dateStr) {
-                return $entry->entry_date == $dateStr && 
+                return $entry->entry_date == $dateStr &&
                        $entry->habit->type == 'productivity';
             });
-            
+
             // Convert productivity text to number
             $prodRating = 2; // default neutral
             if ($prodEntry) {
@@ -272,32 +341,32 @@ class StatsController extends Controller
                     case 'unproductive': $prodRating = 1; break;
                 }
             }
-            
+
             $row = [
                 'date' => $dateStr,
                 'user_id' => $userId,
                 'mood_rating' => $moodRating,
                 'productivity_rating' => $prodRating
             ];
-            
+
             // Add habit completion status
             foreach ($habits as $habit) {
                 $completed = $entries->contains(function($entry) use ($dateStr, $habit) {
-                    return $entry->entry_date == $dateStr && 
-                           $entry->habit_id == $habit->id && 
+                    return $entry->entry_date == $dateStr &&
+                           $entry->habit_id == $habit->id &&
                            $entry->value == '1';
                 });
                 $row['habit_' . $habit->id . '_completed'] = $completed ? 1 : 0;
             }
-            
+
             $transformedData[] = $row;
-            
+
         }
-    
 
 
 
-        
+
+
 
         return view('stats.dashboard', compact('transformedData'));
 

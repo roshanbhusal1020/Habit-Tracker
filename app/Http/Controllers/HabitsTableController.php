@@ -15,35 +15,35 @@ class HabitsTableController extends Controller
     public function show(Request $request)
     {
 
-        // dump(auth()->id());
+        // dump(auth()->id()); // NOSONAR
 
         $targetDate = $request->date ? Carbon::parse($request->date) : now();
 
-        // dump($targetDate);
+        // dump($targetDate); // NOSONAR
 
         $habits = Habit::where('user_id', auth()->id())
-        ->get()
-        ->filter(function ($habit) use ($targetDate) {
-            if ($habit->deleted_from && Carbon::parse($habit->deleted_from)->lte($targetDate)) {
-                return false; //excludes habits that are deleted
-            }
+            ->get()
+            ->filter(function ($habit) use ($targetDate) {
+                if ($habit->deleted_from && Carbon::parse($habit->deleted_from)->lte($targetDate)) {
+                    return false; //excludes habits that are deleted
+                }
 
-            if (in_array($habit->name, ['Mood', 'Productivity', 'Note'])) {
-                return true;
-            }
+                if (in_array($habit->name, ['Mood', 'Productivity', 'Note'])) {
+                    return true;
+                }
 
-            $habitMonth = $habit->month_year ? Carbon::parse($habit->month_year)->format('Y-m') : null;
-            $targetMonth = $targetDate->format('Y-m');
+                $habitMonth = $habit->month_year ? Carbon::parse($habit->month_year)->format('Y-m') : null;
+                $targetMonth = $targetDate->format('Y-m');
 
-            return $habitMonth === null || $habitMonth === $targetMonth; //basically habit is included if $habitMonth is null or is equal $targetDate
-        });
+                return $habitMonth === null || $habitMonth === $targetMonth; //basically habit is included if $habitMonth is null or is equal $targetDate
+            });
         // Generate all dates for the current month
         // $currentDate = now()->startOfMonth();
         // $endOfMonth = now()->endOfMonth();
 
         $startOfMonth = $targetDate->copy()->startOfMonth();
         $daysInMonth = $targetDate->daysInMonth;
-        // dump($daysInMonth);
+        // dump($daysInMonth); // NOSONAR
         $dates = collect();
 
 
@@ -55,38 +55,34 @@ class HabitsTableController extends Controller
                 'formatted' => $date->format('D j'),
                 'full_date' => $date->format('Y-m-d')
             ]);
-            // dd($dates);
+
         }
 
         $moodHabit = Habit::where('user_id', auth()->id())
-                        ->where('name', 'Mood')
-                        ->first();
+            ->where('name', 'Mood')
+            ->first();
 
         $productivityHabit = Habit::where('user_id', auth()->id())
-                ->where('name', 'Productivity')
-                ->first();
+            ->where('name', 'Productivity')
+            ->first();
 
         $noteHabit = Habit::where('user_id', auth()->id())
-                ->where('name', 'Note')
-                ->first();
+            ->where('name', 'Note')
+            ->first();
 
 
         $entries = HabitEntry::where('user_id', auth()->id())
-                    ->whereMonth('entry_date', $targetDate->month)
-                    ->whereYear('entry_date', $targetDate->year)
-                    ->get()
-                    ->groupBy('entry_date');
-
-
+            ->whereMonth('entry_date', $targetDate->month)
+            ->whereYear('entry_date', $targetDate->year)
+            ->get()
+            ->groupBy('entry_date');
 
         $previousMonth = $targetDate->copy()->subMonth()->format('Y-m-d');
         $nextMonth = $targetDate->copy()->addMonth()->format('Y-m-d');
         $currentMonthDisplay = $targetDate->format('F Y');
 
-
-        // $userNotification = new UserNotificationController(); 
+        // $userNotification = new UserNotificationController(); // NOSONAR
         // $userNotification->create('2', 'test', 'hello I am just testing', 'localhost/tesitng', 0, 'idk');
-
 
         return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'noteHabit', 'previousMonth', 'nextMonth', 'currentMonthDisplay', 'targetDate'));
     }
@@ -94,6 +90,8 @@ class HabitsTableController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge(['type' => 'checkbox']);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'type' => 'required|string',
@@ -101,6 +99,9 @@ class HabitsTableController extends Controller
         ]);
 
         try {
+            $response = 'error';
+            $message = 'A habit with this name already exists for this month';
+
             $targetDate = Carbon::parse($validated['target_date']);
             $monthYear = $targetDate->startOfMonth();
 
@@ -111,18 +112,7 @@ class HabitsTableController extends Controller
                 ->first();
 
             if ($existingHabit) {
-                if ($existingHabit->deleted_from) {
-                    $existingHabit->update([
-                        'deleted_from' => null,
-                        'type' => $request->type
-                    ]);
-
-                    return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
-                        ->with('success', 'Habit restored successfully');
-                }
-
-                return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
-                    ->with('error', 'A habit with this name already exists for this month');
+                $this->checkExistingHabit($existingHabit, $request, $targetDate);
             }
 
             // Special habits (Mood, Productivity, Note) should be global (no month_year)
@@ -135,13 +125,31 @@ class HabitsTableController extends Controller
             $habit->month_year = $isGlobalHabit ? null : $monthYear;
             $habit->save();
 
-            return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
-                ->with('success', 'Habit created successfully');
+            $response = 'success';
+            $message = 'Habit created successfully';
 
+            return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
+                ->with($response, $message);
         } catch (\Exception $e) {
             return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
                 ->with('error', 'Failed to create habit');
         }
+    }
+
+    public function checkExistingHabit(Habit $habit, Request $request, Carbon $targetDate): \Illuminate\Http\RedirectResponse
+    {
+        if ($habit->deleted_from) {
+            $habit->update([
+                'deleted_from' => null,
+                'type' => $request->type
+            ]);
+
+            return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
+                ->with('success', 'Habit restored successfully');
+        }
+
+        return redirect()->route('habits.show', ['date' => $targetDate->format('Y-m-d')])
+            ->with('error', 'A habit with this name already exists for this month');
     }
 
 
@@ -154,17 +162,15 @@ class HabitsTableController extends Controller
             'value' => 'required'
         ]);
 
-
-
-        if (!auth()->check()) {
+        if (auth()->check() === false) {
             return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         try {
             $existingEntry = HabitEntry::where([
-            'user_id' => auth()->id(),
-            'habit_id' => $validated['habit_id'],
-            'entry_date' => $validated['date']
+                'user_id' => auth()->id(),
+                'habit_id' => $validated['habit_id'],
+                'entry_date' => $validated['date']
             ])->first();
 
             if ($request->name == 'note') {
@@ -177,7 +183,7 @@ class HabitsTableController extends Controller
                     [
                         'note' => $validated['value'], // !!Attention!!  This is extremly important, if its value instead of note then other habit dropdowns will be overwritten. I twill cause problem
                         'value' => $existingEntry ? $existingEntry->value : "",
-                        ]
+                    ]
                 );
             } else {
                 $habitEntry = HabitEntry::updateOrCreate(
@@ -192,7 +198,6 @@ class HabitsTableController extends Controller
                     ]
                 );
             }
-
 
             return response()->json([
                 'success' => true,
