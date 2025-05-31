@@ -9,6 +9,7 @@ use App\Models\HabitLog;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\dd;
 
 class HabitController extends Controller
@@ -22,15 +23,60 @@ class HabitController extends Controller
 
     }
 
-    public function getUserHabits($userId)
+    public function getUserHabits($userId )
     {
-        $user = User::where('id', $userId)->firstOrFail();
-        $habits= $user->habits()    //recalling the habits function which contains "User has many habits" in User Model
-        ->select('id', 'user_id', 'habitName')
-        ->with('logs:id,habit_id,date,completed,created_at,updated_at') // this Some how calls the logs function in Habit Model
-        ->get();
+   
+        $user = DB::table('users')
+                ->where('id', $userId)
+                ->select('name', 'id', 'email')
+                ->first();
 
-        return response()->json($habits);
+        if (!$user) {
+            return response()->json(['message'=>'User not found'], 404);
+        }
+
+        $habits = DB::table('table_habit')
+                  ->where('user_id', $userId)
+                  ->select('id', 'habitName', 'created_at', 'updated_at')
+                  ->whereYear('created_at',2024)
+                  ->whereMonth('created_at', 3)
+                  ->get();
+
+
+        $habitLogs = DB::table('habit_logs')
+                    -> join('table_habit', 'habit_logs.habit_id', '=', 'table_habit.id')
+                    ->where('table_habit.user_id', $userId)
+                    ->select('habit_logs.id','habit_logs.habit_id', 'habit_logs.completed', 'habit_logs.created_at', 'habit_logs.updated_at')
+                    ->get();
+
+
+        $year =2024; 
+        $month = 03;
+
+
+        $structureData = [
+            'name' =>$user->name,
+            'email'=>$user->email, 
+            'id'=>$user->id,
+            'tableHabit'=>$habits->map(function($habit) use ($habitLogs){
+                return [
+                    'habitName'=>$habit->habitName, 
+                    'id' =>$habit->id, 
+                    'created_at' =>$habit->created_at, 
+                    'updated_at' =>$habit->updated_at, 
+                    'habit_logs'=>$habitLogs->where('habit_id', $habit->id)->values()->toArray()
+                ];
+            })
+        ];
+
+      
+        dd( $structureData);
+        // Log:: info('Fetched Habits:', $habits->toArray());
+
+
+        return response()->json($structureData);
+
+
     }
 
     public function createAndLog(Request $request)

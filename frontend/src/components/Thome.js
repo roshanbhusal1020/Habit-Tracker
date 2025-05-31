@@ -15,7 +15,7 @@ function Thome() {
     console.log(http);
 
 
-   const curentDate = moment().format('YYYY-MM-DD');
+   const curentDate = moment().format('DD-MM-YYYY');
     console.log(curentDate);
 
 
@@ -71,8 +71,13 @@ function Thome() {
     }, [bool]);
 
     const fetchHabits = () => {/// Need to make this dynamic. Now this only gives userid 2 data. if anoither logged in it will not give anything
+        // http.get(`/users/${user.id}/habits`).then(response => {
         http.get(`/users/${user.id}/habits`).then(response => {
+
             console.log(response.data);
+            console.log("USERID :" + user.id);
+
+            // alert(response.data)
             seGetHabs(response.data)
         })
             .catch(error => {
@@ -106,37 +111,35 @@ function Thome() {
             </div>
             <div>
                 <h1> List of habits Habits</h1>
-                {getHabs.map(item => (
+            {getHabs.map(item => (
                     <div>
 
-                        <h2 key={item.id}>Habit:{item.habitName}</h2>
-                        <button>Edit</button>  {/* what I could do here is call back the form above <form/> or something instead of creating new forms
-                        so thats its more dynamic 
-                        */}
-                        <button onClick={() => handleDelete(item.id)}>Delete</button>
+                        <h2 key={item.tableHabit_id}>{item.tableHabit_id} Habit:{item.habitName}</h2>
+                        <button>Edit</button>  
+                        <button onClick={() => handleDelete(item.tableHabit_id)}>Delete</button>
 
                         <table>
                             <thead>
                             <tr>
                                 <th>Date</th>
-                                <th key={item.id}>{item.habitName}</th>
+                                <th key={item.tableHabit_id}>{item.habitName}</th>
                                 <th>Completed</th>
                             </tr>
                         
                             </thead>
                             <tbody>
-                            {item.logs.map(log => (
+                            {/* {item.logs.map(log => ( */}
                             <tr>
-                                {/* <input type="checkbox" /> */}
-                                <td key={log.id}> {log.date}</td>
-                                <td key={log.id}> {log.completed}</td>
+                               
+                                <td key={item.habitLogs_id}>{item.habitLogs_id} {item.date}</td>
+                                <td key={item.habitLogs_id}> {item.completed}</td>
                                 <td>idk</td>
 
 
 
 
                             </tr>
-                        ))}
+                  {/*      ))} */}
                             </tbody>
                       
 
@@ -145,7 +148,7 @@ function Thome() {
 
                     </div>
 
-                ))}
+                ))} 
             </div>
 
         </div>
