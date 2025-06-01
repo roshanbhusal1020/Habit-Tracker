@@ -9,7 +9,7 @@ class TodoController extends Controller
 {
     public function index()
     {
-        $todos = auth()->user()->todos() // uncompleted, earlier due dates abd wutg higher priotrity comes first
+        $todos = auth()->user()->todos()
             ->orderBy('completed')
             ->orderBy('due_date')
             ->orderBy('priority', 'desc')
@@ -33,9 +33,6 @@ class TodoController extends Controller
 
     public function edit(Todo $todo)
     {
-
-
-        // return redirect()->route('pages.todo.edit', compact('todo'));
         return view('pages.todo.edit', compact('todo'));
     }
 
@@ -53,29 +50,21 @@ class TodoController extends Controller
         $todo->update($validated);
 
         return redirect()->route('todo.index')->with(['success' => $todo]);
-        // return response()->json(['request' => $request, 'updatedInfo'=> $todo]);
     }
 
     public function toggle(Todo $todo)
-    // this seems better than Request $request, because this directly fetches the Class data.
-    // if it were for $request, I would have to put some input with id so that I get that id in the backend and do findOrFail and get from the Todo class,
-    //  a long process. Without sending input id like currently what I am doing will just give empty attribute value, because nothing been sent to the backend. toggle{id}toggle, is url so it doesnt send the id to the backend
     {
         $todo->update(['completed' => !$todo->complete]);
 
-        // return redirect()->route('todo.index')->with('success', $todo);
         return redirect()->back()->with('success', 'Todo updated successfully');
     }
 
     public function destroy(Todo $todo)
     {
 
-        // dd($todo);
-        // $this->authorize('delete', $todo);
 
         $todo->delete();
         return redirect()->route('todo.index')->with('success', 'Task deleted successfully!');
-        // return redirect()->route('todo.index')->with('success', 'Task deleted successfully');
     }
 
 }

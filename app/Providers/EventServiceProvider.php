@@ -8,7 +8,6 @@ use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvi
 use Illuminate\Support\Facades\Event;
 use App\Listeners\AssignDefaultHabitsToUser;
 
-
 class EventServiceProvider extends ServiceProvider
 {
     /**

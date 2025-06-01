@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -14,14 +13,14 @@ return new class extends Migration
         // Schema::create('user_notifications', function (Blueprint $table) {
         //     $table->id();
         //     $table->unsignedBigInteger('user_id');
-        //     $table->string('type');  
+        //     $table->string('type');
         //     $table->text('content');
         //     $table->string('url')->nullable();
         //     $table->boolean('read')->default(false);
-        //     $table->json('data')->nullable(); 
+        //     $table->json('data')->nullable();
         //     $table->timestamps();
-            
-        //     });  
+
+        //     });
     }
 
     /**

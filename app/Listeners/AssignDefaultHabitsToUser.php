@@ -35,18 +35,18 @@ class AssignDefaultHabitsToUser
             ['name' => 'Mood', 'type' => 'mood'],
             ['name' => 'Note', 'type' => 'note'],
         ];
-        
+
         foreach ($habits as $habit) {
             // Use associative array to ensure all fields are properly set
 
 
-                $habitz = new Habit();
-                $habitz->user_id = $user->id;
-                $habitz->name = $habit['name'];
-                $habitz->type = $habit['type'];
-                // $habit->month_year = $isGlobalHabit ? null : $monthYear;
-                $habitz->save();
-     
+            $habitz = new Habit();
+            $habitz->user_id = $user->id;
+            $habitz->name = $habit['name'];
+            $habitz->type = $habit['type'];
+            // $habit->month_year = $isGlobalHabit ? null : $monthYear;
+            $habitz->save();
+
         }
     }
 }

@@ -1,28 +1,98 @@
+# Habit Tracker
+<img width="722" alt="homepage" src="https://github.com/user-attachments/assets/7957dae3-1996-4329-946a-12d392cb4617" />
 
-**ATTENTION** </br>
-I need to follow the problem statement. WRITE THE PROBLEM STATEMENT HERE AND WHAT NEEDS TO BE WORKED ON FOR THE SPECIALISED MODULE. </br>
-**ATTENTION** </br>
+ 
+ # Key Features
 
 
-**Notes to improve:** 
-1) The code is too hard coded, there are no foreign keys, the ids should be added or deleted dynamically. 
-2) Focus on one thing at a time, I am all over the place and getting done very little. Follow the following to do list in the order.
+## Habit Tracker Table
+<img width="719" alt="habit table" src="https://github.com/user-attachments/assets/2bb6e767-ecae-4582-b1cf-7c3073b9bf29" />
 
-**Here are to do list so far:**
+- Track daily habits (like gym, coding, reading) across a monthly view.
 
-1) Habit tracker table -> with small highlighting journal like 'I got job on this day'
-2) Journal -> can show option or tick saying it contains journal on that day
-3) Pomodoro timer
-4) To do list  
-5) Bucket list
-6) What I want my life to be in next 1-5-10 years and I want it to remind me after that selected certain period of time (give option for them to choose time, dont choose on your own)
-7) What I am grateful for 
-8) A chart of showing amount of todolist/Habit logs completed or not;  -> quickchart(This ones perhaps unnecessarily difficult, is it even worth it) ??. I could just do a simple table graph instead if its too difficult.
-9) Create a home page which is accesible to everone where they have option to view the DEMO, like how professionally the legit bussiness do. 
-10) what are the things that are holding me back like insecurities, circumstances. What could be done about it. If possible add this feature somewhere in habit table or somewhere where it is engaged more.
-11) Challenges. My challenges and Discover challenges.
+- Visualize impact on mood and productivity.
 
-**Not necessary but I could also add:**
-1) PHP CS FIXER
-2) DOCKER
-3) I could check when I feel certain emotion. for eg: I feel depressed everytime I work from home and I have got days offs. While netural emotion everytime I go to the office. When I right click on certain emotion option in the table, it should give an option to track when I feel this emotion. 
+- Add daily notes for deeper journaling and reflection.
+
+- Automatic streak detection:
+
+    - 7-day streak ➝ congratulatory message
+
+    - 3-day break ➝ reminder to stay consistent
+
+
+
+## Smart To-Do List
+<img width="665" alt="todo" src="https://github.com/user-attachments/assets/16d0bc0b-5736-45c4-a258-de560a703a16" />
+
+Create tasks with:
+
+- Due dates
+
+- Priority levels (High/Medium/Low)
+
+- Completion status
+
+- Task statistics show:
+
+    - Task completion rate
+
+    - Tasks completed on time vs overdue
+
+## Digital Journal
+<img width="794" alt="journal" src="https://github.com/user-attachments/assets/d7f35aa3-b887-4a29-8a34-0ca925bb0731" />
+
+- Daily journaling tool with voice input support.
+
+- Logs entries by date and time.
+
+- Cross-analyzed with mood and productivity metrics.
+
+## Pomodoro Timer
+<img width="668" alt="pomodro" src="https://github.com/user-attachments/assets/4e453638-6ba9-430e-9455-6298ea2e5925" />
+
+- Fully customizable Pomodoro cycles (focus, short break, long break).
+
+- Tracks number of completed sessions.
+
+- Provides insights on:
+
+- Daily focus patterns
+
+- Peak performance times
+
+- Completion rates (on-time vs missed)
+
+
+
+## Progress Analytics
+![habitsMood](https://github.com/user-attachments/assets/6147a38c-6bce-471d-b711-275b99b55bcd)
+![habitsMoodPatter](https://github.com/user-attachments/assets/db481c49-ac42-4a41-a2e4-e20245772b46)
+
+Beautiful charts to visualize trends:
+
+- Mood vs. Habit completion
+
+- Mood vs. Journal entries
+
+- Pomodoro sessions vs. Productivity
+
+- Journal consistency vs. Productivity
+
+- Understand how habits, emotions, and productivity interconnect.
+
+## Notification System
+Smart alerts:
+
+- Encouragement on consistency streaks
+
+- Reminders after inactivity
+
+## Tech Stack
+- Backend: Laravel 10, Laravel Breeze (auth)
+
+- Frontend: Blade, JavaScript
+
+- Database: MySQL
+
+- Authentication: Laravel Breeze (email & password)
