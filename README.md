@@ -16,9 +16,9 @@
 
 - Automatic streak detection:
 
-- 7-day streak ➝ congratulatory message
+    - 7-day streak ➝ congratulatory message
 
-- 3-day break ➝ reminder to stay consistent
+    - 3-day break ➝ reminder to stay consistent
 
 
 
@@ -35,9 +35,9 @@ Create tasks with:
 
 - Task statistics show:
 
-- Task completion rate
+    - Task completion rate
 
-- Tasks completed on time vs overdue
+    - Tasks completed on time vs overdue
 
 ## Digital Journal
 <img width="794" alt="journal" src="https://github.com/user-attachments/assets/d7f35aa3-b887-4a29-8a34-0ca925bb0731" />
