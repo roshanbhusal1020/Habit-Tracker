@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -37,9 +38,9 @@ class ChartController extends Controller
     private function combineAndMapDates($startDate, $endDate, $datasets, $mapCallback, $filterCallback = null)
     {
         $allDates = collect($datasets)
-            ->flatMap(fn($data) => $data->keys()->all())
+            ->flatMap(fn ($data) => $data->keys()->all())
             ->unique()
-            ->filter(fn($date) => $date >= $startDate && $date <= $endDate);
+            ->filter(fn ($date) => $date >= $startDate && $date <= $endDate);
 
         $mappedDates = $allDates->map($mapCallback);
 
@@ -124,7 +125,7 @@ class ChartController extends Controller
                 ];
             },
             // Filter out entries with productivity = 0
-            fn($item) => $item['productivity'] > 0
+            fn ($item) => $item['productivity'] > 0
         );
 
         return response()->json($result->values());
@@ -137,8 +138,6 @@ class ChartController extends Controller
         // Fetch productivity and journal data
         $productivityData = $this->fetchHabitData($userId, 'productivity');
         $journalData = $this->fetchJournalData($userId);
-        // dump($journalData);
-        // dump($productivityData);
 
 
 
@@ -150,10 +149,6 @@ class ChartController extends Controller
         $endDate = now()->endOfMonth()->toDateString();
 
 
-
-
-                // dump($startDate);
-        // dump($endDate);
         $result = $this->combineAndMapDates(
             $startDate,
             $endDate,
@@ -166,7 +161,7 @@ class ChartController extends Controller
                 ];
             },
             // Filter out entries with productivity = 0
-            fn($item) => $item['productivity'] > 0
+            fn ($item) => $item['productivity'] > 0
         );
 
         return response()->json($result->values());

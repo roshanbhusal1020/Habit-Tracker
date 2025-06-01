@@ -11,23 +11,24 @@ use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Notifications\DatabaseNotification;
 
-class ManageHabitActivities extends Command {
+class ManageHabitActivities extends Command
+{
     protected $signature = 'habits:check';
     protected $description = 'Check habits for inactivity and streaks';
 
     public function handle(): void
     {
-        $inactivityThreshold = 3; // days
-        $streakThreshold = 7; // days
-        $streakCooldown = 7; // days
+        $inactivityThreshold = 3;
+        $streakThreshold = 7;
+        $streakCooldown = 7;
 
-        $month = now()->month; // Current month (e.g., 2 for February)
-        $year = now()->year;   // Current year (e.g., 2025
+        $month = now()->month;
+        $year = now()->year;
 
-        $users = User::all(); // Get all users
+        $users = User::all();
 
         foreach ($users as $user) {
-            // Get user's habits excluding "note" type
+
             $habits = Habit::where('user_id', $user->id)
             ->where('type', '!=', 'note')
             ->whereYear('month_year', $year)
@@ -37,42 +38,37 @@ class ManageHabitActivities extends Command {
             }])
             ->get();
 
-if($user->id ==3){
-    // dump($habits);
-                                $habits = Habit::where('user_id', $user->id)
-                                ->where('type', '!=', 'note')
-                                ->whereYear('month_year', $year)
-                                ->whereMonth('month_year', $month)
-                                ->with(['entries' => function ($query) {
-                                    $query->orderBy('entry_date', 'desc');
-                                }])
-                                ->get();
-    dump($habits);
+            if ($user->id == 3) {
+                $habits = Habit::where('user_id', $user->id)
+                ->where('type', '!=', 'note')
+                ->whereYear('month_year', $year)
+                ->whereMonth('month_year', $month)
+                ->with(['entries' => function ($query) {
+                    $query->orderBy('entry_date', 'desc');
+                }])
+                ->get();
 
-    $month = now()->month; // Current month (e.g., 2 for February)
-    $year = now()->year;   // Current year (e.g., 2025
+                $month = now()->month;
+                $year = now()->year;
 
-    // dump($month);
-    // dump($year);
 
-}
-            // If user has no habits, send a default reminder
+            }
             if ($habits->isEmpty()) {
                 $user->notify(new HabitInactivityReminder(null, true));
-                continue; // Skip to the next user
+                continue;
             }
 
             $inactiveHabits = [];
 
             foreach ($habits as $habit) {
-                $latestEntry = $habit->entries->first(); // Get the latest entry
+                $latestEntry = $habit->entries->first();
 
-                // **Check for inactivity**
+
                 if (!$latestEntry || Carbon::parse($latestEntry->entry_date)->diffInDays(now()) >= $inactivityThreshold) {
                     $inactiveHabits[] = $habit->name;
                 }
 
-                // **Check if the last $streakThreshold days have the same mood**
+
                 $streakEntries = HabitEntry::where('habit_id', $habit->id)
                     ->whereDate('entry_date', '>=', now()->subDays($streakThreshold))
                     ->orderBy('entry_date', 'asc')
@@ -81,9 +77,6 @@ if($user->id ==3){
 
                 if (count($streakEntries) >= $streakThreshold) {
 
-                    dump("here");
-
-                    // Check if streak notification was recently sent
                     $recentNotification = DatabaseNotification::where('notifiable_id', $user->id)
                         ->where('notifiable_type', User::class)
                         ->where('type', HabitStreakNotification::class)
@@ -92,7 +85,7 @@ if($user->id ==3){
                         ->exists();
 
                     if (!$recentNotification) {
-                        $user->notify(new HabitStreakNotification($habit->name, count($streakEntries))); // so here HabitStreakNotification just creates the notification in the background but only sends when notify() is called
+                        $user->notify(new HabitStreakNotification($habit->name, count($streakEntries)));
                     }
                 }
             }

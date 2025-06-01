@@ -5,8 +5,7 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\URL;  
-
+use Illuminate\Support\Facades\URL;
 
 class HabitInactivityReminder extends Notification implements ShouldQueue
 {
@@ -28,7 +27,7 @@ class HabitInactivityReminder extends Notification implements ShouldQueue
 
     public function toArray($notifiable)
     {
-        $url = URL::to('/habits');  
+        $url = URL::to('/habits');
 
         if ($this->isGeneralReminder) {
             return [

@@ -9,10 +9,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PomodoroController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TodoController;
-use App\Http\Controllers\UserNotificationController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ChartController;
-
 use Illuminate\Support\Facades\Auth;
 
 // use App\Http\Controllers\StatsController;
@@ -45,11 +43,10 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/habits', [HabitsTableController::class, 'show'])->name('habits.show');
     Route::post('/habits/entry', [HabitsTableController::class, 'store'])->name('habits.store');
-    // Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
     Route::post('/habits/entries/store', [HabitsTableController::class, 'storeEntry'])->name('habits.entries.store');
     Route::delete('/habits/{habit}', [HabitsTableController::class, 'destroy'])->name('habits.destroy');
 
-    
+
 
     Route::get('/pomodoro', [PomodoroController::class, 'show'])->name('pomodoro.show');
 
@@ -69,7 +66,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/journal', [JournalController::class, 'store'])->name('journal.store');
 
 
-    // Route::get('api/pomodoro/stats', [StatsController::class, 'getPomodoroStats'])->name('stats.getPomodoroStats');
     Route::get('stats/pomodoro', [StatsController::class, 'getPomodoroStats'])->name('stats.pomodoro');
     Route::get('stats/todo', [StatsController::class, 'getTodoListStats'])->name('stats.todo');
     Route::get('stats/habit', [StatsController::class, 'getHabitTableStats'])->name('stats.habit');
@@ -78,7 +74,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/testing', [StatsController::class, 'overallAnalysis'])->name('testing');
 
-    // Route::get('/notification', [UserNotificationController::class, 'show'])->name('notification.show');
     Route::get('/notification', [NotificationController::class, 'index']);
     Route::post('/notification/mark-read/{id}', [NotificationController::class, 'markAsRead']);
     Route::get('/mood-vs-habits', [ChartController::class, 'moodVsHabits']);
@@ -86,9 +81,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/pomodoro-vs-productivity', [ChartController::class, 'pomodoroVsProductivity']);
     Route::get('/journal-vs-productivity', [ChartController::class, 'journalVsProductivity']);
 
-    // Route::get('/dashboard', [HomepageController::class, 'show'])->name('homepage.show');
 
 });
 
 require __DIR__.'/auth.php';
-

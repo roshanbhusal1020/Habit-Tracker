@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Habit;
 use App\Models\HabitEntry;
-
 use App\Models\Pomodoro;
 use App\Models\Todo;
 use Illuminate\Support\Facades\DB;
@@ -72,18 +71,8 @@ class StatsController extends Controller
             ->orderBy('date')
             ->get();
 
-        // dump($completionRate);
 
-        // dump($focusTimeByDay);
-        // dump($completedSessions);
-        // dump($totalSessions);
-        // dump($breakPatterns); // I could add here showing that how every after 3 short breaks is long break.
-        // dump($productiveTimeSlots);
-        // dump($totalFocusHours);
 
-        // !!VERY IMPORTANT!!
-        // which dates tasks were completed + emotional/productivity state from the habit table
-        // !!VERY IMPORTANT!!
 
 
         return view('stats.show', compact(
@@ -96,9 +85,7 @@ class StatsController extends Controller
         ));
     }
 
-    // public function showPomodoroStat() {
-    //     return view('stats.show');
-    // }
+
     public function getJournalStats()
     {
         //most talked theme
@@ -106,12 +93,6 @@ class StatsController extends Controller
 
     public function getHabitTableStats()
     {
-        // !!VERY IMPORTANT!!
-        // which dates tasks were completed + emotional/productivity state from the habit table
-        // !!VERY IMPORTANT!!
-
-        //streak
-
         /** @var \App\Models\User */
         $authUser = auth()->user();
         $inputDates = HabitEntry::query()
@@ -155,27 +136,27 @@ class StatsController extends Controller
     public function calculateHabit(Habit $habit, Collection $completedDates, Collection $uncompletedDates)
     {
         $collection = collect();
-    
+
         $completed = $habit->entries()
             ->whereIn('entry_date', $completedDates)
             ->get()
             ->pluck('value');
-    
+
         $avgCompleted = $completed->count() > 0 ? $completed->sum() / $completed->count() : 0;
-    
+
         $uncompleted = $habit->entries()
             ->whereIn('entry_date', $uncompletedDates)
             ->get()
             ->pluck('value');
-    
+
         $avgUncompleted = $uncompleted->count() > 0 ? $uncompleted->sum() / $uncompleted->count() : 0;
-    
+
         $difference = $avgCompleted - $avgUncompleted;
-    
+
         $percentageIncrease = $avgUncompleted != 0
             ? ($difference / $avgUncompleted) * 100
             : null;
-    
+
         $collection
             ->put('completed', $completed)
             ->put('avg_completed', $avgCompleted)
@@ -183,27 +164,14 @@ class StatsController extends Controller
             ->put('avg_uncompleted', $avgUncompleted)
             ->put('difference', $difference)
             ->put('percentage_increase', $percentageIncrease);
-    
+
         return $collection;
     }
-    
+
 
     public function getTodoListStats()
     {
-        //completion rate- total completed; percentage of tasks completed
 
-        // amount of priority lists (a break down of the list)
-
-        // how long it took to finish the list on average
-
-        //days when the tasks were completed
-
-        // % of tasks completed(or not) before or after due_date (Punchuality)
-
-        //upcoming deadlines
-
-
-        //completion rate
         $todos = Todo::where('user_id', auth()->id());
 
         $allTodos = $todos->count();
@@ -211,14 +179,12 @@ class StatsController extends Controller
         $completionRate = $allTodos > 0 ? ($completedTodos / $allTodos) * 100 : 0;
 
 
-        // priority distribution
-
         $priorityDistribution = $todos->clone()
                                 ->select('priority', DB::raw('COUNT(*) as count'))
                                 ->groupBy('priority')
                                 ->get()
                                 ->mapWithKeys(function ($item) {
-                                    $priority = match($item->priority) { // this is a really useful function, I could reuse it later.
+                                    $priority = match($item->priority) {
                                         0 => 'Low',
                                         1 => 'Medium',
                                         2 => 'High',
@@ -226,8 +192,6 @@ class StatsController extends Controller
                                     };
                                     return [$priority => $item->count];
                                 });
-
-        //punchuality
 
         $punchualityStats = [
             'onTime' => $todos->clone()
@@ -263,7 +227,7 @@ class StatsController extends Controller
                 ->orderBy('due_date')
                 ->take(5)
                 ->get();
-        // dump($completionRate, $priorityDistribution, $punchualityStats, $upcomingDeadlines, $completionTimeline);
+
 
         return view('stats.todoChart.show', compact(
             'completionRate',
@@ -278,22 +242,10 @@ class StatsController extends Controller
     public function overallAnalysis()
     {
 
-        // Chart to generate:
-        // habit done- mood -> finished more or less (NOT REALLY :())
-        // journal - mood
-        // journal - productivity
-        // pomodoro - producitivty
-
-        // Mood over the month-week chart
-        // productivity over the month-week chart
-
-        //add notification for weekly/monthly report
-
         $startDate = '2024-12-01';
         $endDate = '2024-12-31';
         $userId = 2;
 
-        // First, get all habits for the given month
         $habits = Habit::forMonth($startDate)
             ->where('user_id', $userId)
             ->where('type', '!=', 'mood')  // Exclude mood/productivity habits
@@ -313,7 +265,7 @@ class StatsController extends Controller
             $dateStr = $date->format('Y-m-d');
 
             // Find mood rating for this date
-            $moodEntry = $entries->first(function($entry) use ($dateStr) {
+            $moodEntry = $entries->first(function ($entry) use ($dateStr) {
                 return $entry->entry_date == $dateStr &&
                        $entry->habit->type == 'mood';
             });
@@ -321,14 +273,16 @@ class StatsController extends Controller
             // Convert mood text to number
             $moodRating = 2; // default neutral
             if ($moodEntry) {
-                switch($moodEntry->value) {
-                    case 'positive': $moodRating = 3; break;
-                    case 'negative': $moodRating = 1; break;
+                switch ($moodEntry->value) {
+                    case 'positive': $moodRating = 3;
+                        break;
+                    case 'negative': $moodRating = 1;
+                        break;
                 }
             }
 
             // Find productivity rating
-            $prodEntry = $entries->first(function($entry) use ($dateStr) {
+            $prodEntry = $entries->first(function ($entry) use ($dateStr) {
                 return $entry->entry_date == $dateStr &&
                        $entry->habit->type == 'productivity';
             });
@@ -336,9 +290,11 @@ class StatsController extends Controller
             // Convert productivity text to number
             $prodRating = 2; // default neutral
             if ($prodEntry) {
-                switch($prodEntry->value) {
-                    case 'productive': $prodRating = 3; break;
-                    case 'unproductive': $prodRating = 1; break;
+                switch ($prodEntry->value) {
+                    case 'productive': $prodRating = 3;
+                        break;
+                    case 'unproductive': $prodRating = 1;
+                        break;
                 }
             }
 
@@ -351,7 +307,7 @@ class StatsController extends Controller
 
             // Add habit completion status
             foreach ($habits as $habit) {
-                $completed = $entries->contains(function($entry) use ($dateStr, $habit) {
+                $completed = $entries->contains(function ($entry) use ($dateStr, $habit) {
                     return $entry->entry_date == $dateStr &&
                            $entry->habit_id == $habit->id &&
                            $entry->value == '1';

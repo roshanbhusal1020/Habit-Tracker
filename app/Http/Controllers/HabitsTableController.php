@@ -7,19 +7,15 @@ use App\Models\HabitEntry;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\UserNotificationController;
-
 
 class HabitsTableController extends Controller
 {
     public function show(Request $request)
     {
 
-        // dump(auth()->id()); // NOSONAR
 
         $targetDate = $request->date ? Carbon::parse($request->date) : now();
 
-        // dump($targetDate); // NOSONAR
 
         $habits = Habit::where('user_id', auth()->id())
             ->get()
@@ -37,13 +33,9 @@ class HabitsTableController extends Controller
 
                 return $habitMonth === null || $habitMonth === $targetMonth; //basically habit is included if $habitMonth is null or is equal $targetDate
             });
-        // Generate all dates for the current month
-        // $currentDate = now()->startOfMonth();
-        // $endOfMonth = now()->endOfMonth();
 
         $startOfMonth = $targetDate->copy()->startOfMonth();
         $daysInMonth = $targetDate->daysInMonth;
-        // dump($daysInMonth); // NOSONAR
         $dates = collect();
 
 
@@ -81,8 +73,6 @@ class HabitsTableController extends Controller
         $nextMonth = $targetDate->copy()->addMonth()->format('Y-m-d');
         $currentMonthDisplay = $targetDate->format('F Y');
 
-        // $userNotification = new UserNotificationController(); // NOSONAR
-        // $userNotification->create('2', 'test', 'hello I am just testing', 'localhost/tesitng', 0, 'idk');
 
         return view('habits.show', compact('habits', 'entries', 'dates', 'productivityHabit', 'moodHabit', 'noteHabit', 'previousMonth', 'nextMonth', 'currentMonthDisplay', 'targetDate'));
     }
