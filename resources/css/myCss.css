@@ -1,0 +1,88 @@
+/* Basic container styles */
+.notification-container {
+    position: relative;
+    margin-right: 1rem;
+}
+
+/* Bell icon */
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+}
+
+
+.notification-badge {
+    display: none;
+    position: absolute;
+    font-size: 10px;
+    top: 0;
+    right: 0;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    padding: 2px ;
+
+}
+.notification-bell i {
+    font-size: 30px;  /* or whatever size you want */
+
+}
+/* Dropdown menu */
+.notification-dropdown {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    width: 300px;
+    max-height: 400px;
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    overflow-y: auto;
+    z-index: 1000;
+}
+
+/* Dropdown header */
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.notification-header h2 {
+    margin: 0;
+    font-size: 16px;
+}
+
+/* Mark all read button */
+.mark-all-read {
+    width: 100%;
+    padding: 8px;
+    text-align: center;
+    background-color: #f5f5f5;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+}
+
+/* Individual notification items */
+.notification-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.notification-item:hover {
+    background-color: #f5f5f5;
+}
+
+.notification-item a {
+    text-decoration: none;
+    color: #333;
+}
+
+.notification-item p {
+    margin: 0;
+}
+
