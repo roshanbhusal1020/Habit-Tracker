@@ -96,3 +96,4 @@ Smart alerts:
 - Database: MySQL
 
 - Authentication: Laravel Breeze (email & password)
+
